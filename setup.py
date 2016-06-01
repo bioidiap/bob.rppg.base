@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Andre Anjos <andre.anjos@idiap.ch>
-# Mon 12 Oct 2015 12:34:22 CEST
+# Guillaume HEUSCH <guillaume.heusch@idiap.ch>
+# Tue 31 May 12:00:17 CEST 2016
 
 from setuptools import setup, find_packages
 
@@ -12,10 +12,10 @@ version = open("version.txt").read().rstrip()
 # parameters that define our package.
 setup(
 
-  name='bob.rppg.cvpr14',
+  name='bob.rppg.base',
   version=version,
-  description="UOULU's CVPR'14 Remote PPG Technique",
-  url='https://gitlab.idiap.ch/biometric/bob.rppg.cvpr14',
+  description="Algorithms for Remote PPG",
+  url='https://gitlab.idiap.ch/biometric/bob.rppg.base',
   license='GPLv3',
   author='Guillaume Heusch',
   author_email='guillaume.heusch@idiap.ch',
@@ -30,6 +30,7 @@ setup(
       "setuptools",
       "bob.io.base",
       "bob.ip.facedetect",
+      "bob.ip.skincolorfilter",
       "bob.db.hci_tagging",
       "bob.db.cohface",
       "docopt",
@@ -44,9 +45,8 @@ setup(
         'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
         'cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main',
         'cvpr14_filter.py = bob.rppg.cvpr14.script.filter:main',
-        'cvpr14_hr.py = bob.rppg.cvpr14.script.frequency_analysis:main',
-        'cvpr14_perf.py = bob.rppg.cvpr14.script.generate_results:main',
-        'cvpr14_debug.py = bob.rppg.cvpr14.script.debug:main',
+        'rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main',
+        'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main'
         ],
     },
 
