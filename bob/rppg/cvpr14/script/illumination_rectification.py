@@ -25,7 +25,7 @@ Options:
                             execution graphically. We'll plot some interactions.
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
-                            all the data sets will be loaded [default: None].
+                            all the data sets will be loaded.
   -f, --facedir=<path>      The path to the directory containing the average
                             green color on the face region [default: face].
   -b, --bgdir=<path>        The path to the directory containing the average
@@ -97,11 +97,19 @@ def main(user_input=None):
   # if the user wants more verbosity, lowers the logging level
   if args['--verbose'] == 1: logging.getLogger("illum_log").setLevel(logging.INFO)
   elif args['--verbose'] >= 2: logging.getLogger("illum_log").setLevel(logging.DEBUG)
- 
+
   # chooses the database driver to use
   if args['cohface']:
     import bob.db.cohface
-    dbdir = bob.db.cohface.DATABASE_LOCATION
+    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
+      logger.debug("Using Idiap default location for the DB")
+      dbdir = bob.db.cohface.DATABASE_LOCATION
+    elif args['--facedir'] is not None:
+      logger.debug("Using provided location for the DB")
+      dbdir = args['--facedir']
+    else:
+      logger.warn("Could not find the database directory, please provide one")
+      sys.exit()
     db = bob.db.cohface.Database(dbdir)
     if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
@@ -111,7 +119,15 @@ def main(user_input=None):
   elif args['hci']:
     import bob.db.hci_tagging
     import bob.db.hci_tagging.driver
-    dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
+    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
+      logger.debug("Using Idiap default location for the DB")
+      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
+    elif args['--facedir'] is not None:
+      logger.debug("Using provided location for the DB")
+      dbdir = args['--facedir'] 
+    else:
+      logger.warn("Could not find the database directory, please provide one")
+      sys.exit()
     db = bob.db.hci_tagging.Database()
     if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
       logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
