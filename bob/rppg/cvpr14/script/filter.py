@@ -77,7 +77,7 @@ import bob.io.base
 
 from ..filter_utils import detrend
 from ..filter_utils import average 
-from ..filter_utils import build_bandpass_filter 
+from ...base.utils import build_bandpass_filter 
 
 def main(user_input=None):
 
@@ -174,6 +174,12 @@ def main(user_input=None):
       motion_corrected_signal = bob.io.base.load(motion_file)
     except (IOError, RuntimeError) as e:
       logger.warn("Skipping file `%s' (no motion corrected signal file available)", obj.stem)
+      continue
+
+    # check whether the signal is long enough to be filtered with the bandpass of this order
+    padlen = 3 * len(b)
+    if motion_corrected_signal.shape[0] < padlen:
+      logger.warn("Skipping file {0} (unable to bandpass filter it, the signal is probably not long enough)".format(obj.stem))
       continue
 
     # detrend
