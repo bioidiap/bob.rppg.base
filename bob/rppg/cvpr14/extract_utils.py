@@ -144,6 +144,7 @@ def get_mask(image, mask_points):
 
   ROIpath = mplPath.Path(poly_verts, closed=True)
   grid = ROIpath.contains_points(points).reshape((ny,nx))
+  grid = grid.astype('bool')
   return grid
 
 
