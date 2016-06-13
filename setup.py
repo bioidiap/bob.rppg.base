@@ -45,6 +45,8 @@ setup(
         'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
         'cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main',
         'cvpr14_filter.py = bob.rppg.cvpr14.script.filter:main',
+        'chrom_pulse.py = bob.rppg.chrom.script.extract_pulse:main',
+        'chrom_debug.py = bob.rppg.chrom.script.debug:main',
         'rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main',
         'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main'
         ],
