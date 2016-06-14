@@ -317,9 +317,9 @@ def main(user_input=None):
       from matplotlib import pyplot
       f, axarr = pyplot.subplots(2, sharex=True)
       axarr[0].plot(range(x_bandpassed.shape[0]), x_bandpassed, 'k')
-      axarr[0].set_title("X value in the chrominance subspace")
+      axarr[0].set_title("X bandpassed")
       axarr[1].plot(range(y_bandpassed.shape[0]), y_bandpassed, 'k')
-      axarr[1].set_title("Y value in the chrominance subspace")
+      axarr[1].set_title("Y bandpassed")
       pyplot.show()
 
     # build the final pulse signal
