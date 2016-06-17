@@ -29,13 +29,13 @@ def kp66_to_mask(image, keypoints, indent=10, plot=False):
 
     **Parameters:**
       
-      ``image`` : (3d numpy array) 
+      ``image`` (3d numpy array):
         The current frame.
       
       ``keypoints`` (2d numpy array 66x2): 
         the set of 66 keypoints retrieved by DRMF.
 
-      ``indent`` ([Optional] int)
+      ``indent`` ([Optional] int):
         The percentage of the facewidth [in pixels] by which 
         selected keypoints are shifted inside the face to
         build the mask. THe facewidth is defined by the distance 
@@ -43,18 +43,18 @@ def kp66_to_mask(image, keypoints, indent=10, plot=False):
         of the face, at the eyes' height.
         Default to 10.
       
-      ``plot`` ([Optional] boolean)
+      ``plot`` ([Optional] boolean):
         If set to True, plots the current face with the
         selected keypoints and the built mask. Default to False
 
     **Returns**
       
-      ``mask`` (2d numpy boolean array)
-      A boolean array of the size of the original image, where the region
-      corresponding to the mask is True.
+      ``mask`` (2d numpy boolean array):
+        A boolean array of the size of the original image, where the region
+        corresponding to the mask is True.
 
-      ``mask_points`` (list of tuples, 9x2)
-      The points corresponding to vertices of the mask.
+      ``mask_points`` (list of tuples, 9x2):
+        The points corresponding to vertices of the mask.
   """
   assert keypoints.shape[0] == 66, "You should provide a set 66 keypoints"
 
@@ -118,17 +118,17 @@ def get_mask(image, mask_points):
 
   **Parameters**
 
-      ``image`` : (3d numpy array) 
+      ``image`` (3d numpy array): 
         The current frame.
 
-      ``mask_points`` (list of tuples, 9x2)
-      The points corresponding to vertices of the mask.
+      ``mask_points`` (list of tuples, 9x2):
+        The points corresponding to vertices of the mask.
   
   **Returns**
 
-      ``mask`` (2d numpy boolean array)
-      A boolean array of the size of the original image, where the region
-      corresponding to the mask is True.
+      ``mask`` (2d numpy boolean array):
+        A boolean array of the size of the original image, where the region
+        corresponding to the mask is True.
   """
   import matplotlib.path as mplPath
 
@@ -155,28 +155,28 @@ def  get_good_features_to_track(face, npoints, quality=0.01, min_distance=10, pl
 
   **Parameters**
 
-    ``face`` : (3d numpy array)
+    ``face`` (3d numpy array):
       The cropped face image
 
-    ``npoints`` : (int)
+    ``npoints`` (int):
       The maximum number of strong corners you want to detect
   
-    ``quality`` : ([Optional] float)
+    ``quality`` ([Optional] float):
       The minimum relative quality of the detected corners.
       Note that increasing this value decreases the number of
       detected corners. Defaluts to 0.01.
 
-    ``min_distance`` : ([Optional] int) 
+    ``min_distance`` ([Optional] int): 
       minimum euclidean distance between detected corners.
       Defaults to 10.
   
-    ``plot``: ([Optional] boolean)
+    ``plot`` ([Optional] boolean):
       if we should plot the currently selected features to track.
       Defaults to False.
 
   **Returns**
 
-    ``corners`` : (numpy array of dim (npoints, 1, 2))
+    ``corners`` (numpy array of dim (npoints, 1, 2)):
       the detected strong corners.
   """
   from cv2 import goodFeaturesToTrack
@@ -204,28 +204,27 @@ def track_features(previous, current, previous_points, plot=False):
 
   **Parameters**
   
-    ``previous``: (3d numpy array) 
+    ``previous`` (3d numpy array):
       the previous frame.
   
-    ``current`` : (3d numpy array) 
+    ``current`` (3d numpy array): 
       the current frame.
   
-    ``previous_points`` : (numpy array of dim (npoints, 1, 2))
+    ``previous_points`` (numpy array of dim (npoints, 1, 2)):
       the set of keypoints to track (in the previous frame).
   
-    ``plot`` : ([Optional] boolean)
+    ``plot`` ([Optional] boolean):
       Plots the keypoints projected on the current frame.
       Defaults to False.
 
   **Returns**
   
-    ``current_points`` : (numpy array of dim (npoints, 1, 2))
+    ``current_points`` (numpy array of dim (npoints, 1, 2)):
       the set of keypoints in the current frame.    
   """
   prev_gray = bob.ip.color.rgb_to_gray(previous)
   curr_gray = bob.ip.color.rgb_to_gray(current)
   from cv2 import calcOpticalFlowPyrLK
-  #current_points = cv2.calcOpticalFlowPyrLK(prev_gray, curr_gray, previous_points)
   current_points = calcOpticalFlowPyrLK(prev_gray, curr_gray, previous_points)
 
   if plot:
@@ -252,15 +251,15 @@ def find_transformation(previous_points, current_points):
 
   **Parameters**
 
-    ``previous_points`` : (numpy array)
+    ``previous_points`` (numpy array):
       Set of 'starting' 2d points 
 
-    ``current_points`` : (numpy array)
+    ``current_points`` (numpy array):
       Set of 'destination' 2d points
 
   **Returns**
     
-    ``transformation_matrix`` : (numpy array of dim (3,2))
+    ``transformation_matrix`` (numpy array of dim (3,2)):
       the affine transformation matrix between
       the two sets of points. 
   """
@@ -276,16 +275,16 @@ def get_current_mask_points(previous_mask_points, transfo_matrix):
 
   **Parameters**
   
-    ``previous_mask_points`` : (numpy array)
+    ``previous_mask_points`` (numpy array):
       The points forming the mask in the previous frame
   
-    ``transformation_matrix`` : (numpy array (3x2))
+    ``transformation_matrix`` (numpy array (3x2)):
       the affine transformation matrix between
       the two sets of points. 
 
   **Returns**
     
-    ``current_mask_points`` : (numpy array)
+    ``current_mask_points`` (numpy array):
       The points forming the mask in the current frame
   """
   previous_mask_points = numpy.array([previous_mask_points], dtype='float64')
@@ -302,20 +301,20 @@ def compute_average_colors_mask(image, mask, plot=False):
 
   **Parameters**
   
-    ``image`` : (3d numpy array )
+    ``image`` (3d numpy array ):
       The image containing the face.
     
-    ``mask`` (2d numpy boolean array)
+    ``mask`` (2d numpy boolean array):
       A boolean array of the size of the original image, where the region
       corresponding to the mask is True.
 
-    ``plot`` : ([Optional] boolean)
+    ``plot`` ([Optional] boolean):
       Plot the mask as an overlay on the original image.
       Defaults to False.
   
   **Returns**
 
-    ``color`` : (float)
+    ``color`` (float):
       The average green color inside the mask ROI.
   """
   if plot:

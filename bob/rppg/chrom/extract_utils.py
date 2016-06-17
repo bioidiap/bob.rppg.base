@@ -15,22 +15,22 @@ def compute_mean_rgb(image, mask=None):
   
   **Parameters**
 
-    ``image`` : (3d numpy array)
+    ``image`` (3d numpy array):
       The image to process
 
-    ``mask`` : (2d boolen numpy array)
+    ``mask`` (2d boolen numpy array):
       Mask of the size of the image, telling which pixels
       should be considered
 
   **Returns**
 
-    ``mean_r`` : (float)
+    ``mean_r`` (float):
       The mean red value
 
-    ``mean_g`` : (float)
+    ``mean_g`` (float):
       The mean green value
 
-    ``mean_b`` : (float)
+    ``mean_b`` (float):
       The mean blue value
   """
   assert len(image.shape) == 3, "This is meant to work with color images (3 channels)"
@@ -47,15 +47,15 @@ def compute_gray_diff(previous, current):
   
   **Parameters**
 
-    ``previous`` : (3d numpy array)
+    ``previous`` (3d numpy array):
       The previous frame.
  
-    ``current`` : (3d numpy array)
+    ``current`` (3d numpy array):
       The current frame.
  
   **Returns**
 
-    ``diff`` : (float)
+    ``diff`` (float):
       The sum of the absolute difference in pixel intensity between two frames
   """
   from bob.ip.color import rgb_to_gray
@@ -75,16 +75,16 @@ def select_stable_frames(diff, n):
 
   **Parameters**
 
-    ``diff`` : (1d numpy array)
+    ``diff`` (1d numpy array):
       The sum of absolute pixel intensity differences between 
       consecutive frames, across the whole sequence.
 
-    ``n`` ; (int)
+    ``n`` ; (int):
       The number of consecutive frames you want to select.
 
   **Returns**
 
-    ``index`` : (int)
+    ``index`` (int):
       The frame index at which the stable segment begins.
   """
   current_min = float("inf")
@@ -105,21 +105,21 @@ def project_chrominance(r, g, b):
 
   **Parameters**
 
-    ``r`` : (float)
+    ``r`` (float):
       The red value
 
-    ``g`` : (float)
+    ``g`` (float):
       The green value
 
-    ``b`` : (float)
+    ``b`` (float):
       The blue value
 
   **Returns**
   
-    ``x`` : (float)
+    ``x`` (float):
       The x value
   
-    ``y`` : (float)
+    ``y`` (float):
       The y value
   """
   x = (3.0 * r) - (2.0 * g)

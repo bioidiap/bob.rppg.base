@@ -15,21 +15,21 @@ def rectify_illumination(face_color, bg_color, step, length):
 
   **Parameters**
 
-    ``face_color`` : (1d numpy array)
+    ``face_color`` (1d numpy array):
       The mean green value of the face across the video sequence. 
 
-    ``bg_color`` : (1d numpy array)
+    ``bg_color`` (1d numpy array):
       The mean green value of the background across the video sequence. 
 
-    ``step`` : (float)
+    ``step`` (float):
       Step size in the filter's weight adaptation.
 
-    ``length`` : (int)
+    ``length`` (int):
       Length of the filter.
 
   **Returns**
     
-    ``rectified color`` : (1d numpy array)
+    ``rectified color`` (1d numpy array):
       The mean green values of the face, corrected for illumination variations.
   """
   # first pass to find the filter coefficients
@@ -52,35 +52,35 @@ def nlms(signal, desired_signal, n_filter_taps, step, initCoeffs=None, adapt=Tru
   
   **Parameters**
   
-    ``signal`` : (1d numpy array)
+    ``signal`` (1d numpy array):
       The signal to be filtered.
   
-    ``desired_signal`` : (1d numpy array)
+    ``desired_signal`` (1d numpy array):
       The target signal.
 
-    ``n_filter_taps`` : (int)
+    ``n_filter_taps`` (int):
       The number of filter taps (related to the filter order).
   
-    ``step`` : (float)
+    ``step`` (float):
       Adaptation step for the filter weights.
   
 
-    ``initCoeffs`` : ([Optional] numpy array (1, n_filter_taps))
+    ``initCoeffs`` ([Optional] numpy array (1, n_filter_taps)):
       Initial values for the weights. Defaults to zero.
 
-    ``adapt`` : ([Optional] boolean)
+    ``adapt`` ([Optional] boolean):
       If True, adapt the filter weights. If False, only filters.
       Defaults to True.
 
   **Returns**
 
-    ``y`` : (1d numpy array)
+    ``y`` (1d numpy array):
       The filtered signal.
     
-    ``e`` : (1d numpy array)
+    ``e`` (1d numpy array):
       The error signal (difference between filtered and desired)
 
-    ``w`` : (numpy array (1, n_filter_taps))
+    ``w`` (numpy array (1, n_filter_taps)):
       The found weights of the filter.
       
   """

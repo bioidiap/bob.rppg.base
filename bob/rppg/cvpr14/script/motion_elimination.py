@@ -25,10 +25,10 @@ Options:
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -i, --indir=<path>        The path to the saved illumination corrected signal
-                            on your disk [default: illumination-corrected].
+                            on your disk [default: illumination].
   -o, --outdir=<path>       The path to the output directory where the resulting
                             motion corrected signals will be stored
-                            [default: motion-eliminated].
+                            [default: motion].
   -L, --seglength=<int>     The length of the segments [default: 61]
   -t, --threshold=<float>   Specify the the threshold on the 
                             standard deviation of segments [default: 0].

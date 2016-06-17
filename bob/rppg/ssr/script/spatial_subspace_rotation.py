@@ -77,8 +77,8 @@ import numpy
 import bob.io.video
 import bob.ip.color
 
-from ..ssr_utils import load_bbox
-from ..ssr_utils import crop_face
+from ...base.utils import load_bbox
+from ...base.utils import crop_face
 from ..ssr_utils import get_skin_pixels
 from ..ssr_utils import get_eigen
 from ..ssr_utils import plot_eigenvectors

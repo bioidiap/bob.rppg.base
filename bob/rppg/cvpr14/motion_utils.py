@@ -15,18 +15,18 @@ def build_segments(signal, length):
 
   **Parameters**
 
-    ``signal`` : (1d numpy array)
+    ``signal`` (1d numpy array):
       The signal to be processed.
 
-    ``length`` : (int)
+    ``length`` (int):
       The length of the segments.
 
   **Returns**
 
-    ``segments`` : (2d numpy array (n_segments, length))
+    ``segments`` (2d numpy array (n_segments, length)):
       the segments composing the signal.
 
-    ``end_index`` : (int)
+    ``end_index`` (int):
       The length of the signal (there may be a trail smaller
       than a segment at the end of the signal, that will
       be discarded).
@@ -46,22 +46,22 @@ def prune_segments(segments, threshold):
 
   **Parameters**
 
-    ``segments`` : (2d numpy array)
+    ``segments`` (2d numpy array):
       The set of segments.
 
-    ``threshold`` : (float)
+    ``threshold`` (float):
       Threshold on the standard deviation.
 
   **Returns**
     
-    ``pruned_segments`` : (2d numpy array)
+    ``pruned_segments`` (2d numpy array):
       The set of "stable" segments.
 
-    ``gaps`` : (list of dim (# of retained segments))
+    ``gaps`` (list of dim (# of retained segments)):
       Boolean list that tells if a gap should be accounted for
       when building the final signal.
 
-    ``cut_index`` : (list of tuples)
+    ``cut_index`` (list of tuples):
       Contains the start and end index of each removed segment.
       Used for plotting purposes.
   """
@@ -92,16 +92,16 @@ def build_final_signal(segments, gaps):
 
   **Parameters**
 
-    ``segments`` : (2d numpy array)
+    ``segments`` (2d numpy array):
       The set of remaining segments.
 
-    ``gaps`` : (list)
+    ``gaps`` (list):
       Boolean list that tells if a gap should be accounted for
       when building the final signal.
   
   **Returns**
     
-    ``final_signal`` : (1d numpy array)
+    ``final_signal`` (1d numpy array):
       The final signal.
   """
   signal_length = segments.shape[0] * segments.shape[1]
@@ -132,16 +132,16 @@ def build_final_signal_cvpr14(segments, gaps):
 
   **Parameters**
 
-    ``segments`` : (2d numpy array)
+    ``segments`` (2d numpy array):
       The set of remaining segments.
 
-    ``gaps`` : (list)
+    ``gaps`` (list):
       Boolean list that tells if a gap should be accounted for
       when building the final signal.
   
   **Returns**
     
-    ``final_signal`` : (1d numpy array)
+    ``final_signal`` (1d numpy array):
       The final signal.
   """
   signal_length = segments.shape[0] * segments.shape[1]
