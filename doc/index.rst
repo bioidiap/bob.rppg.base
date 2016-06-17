@@ -4,6 +4,7 @@
    contain the root `toctree` directive.
 
 
+.. _bob.ip.facedetect:
 .. _bob.ip.skincolorfilter:
 
 
@@ -17,17 +18,26 @@ This module contains the implementation of different remote photoplesthymography
   * CHROM [dehaan-tbe-2013]_.
   * 2SR [wang-tbe-2015]_. 
 
+Also, we provide scripts to infer the heart-rate from the pulse signals, and
+to evaluate global performance on two different databases: Manhob HCI-Tagging 
+(http://mahnob-db.eu/hci-tagging/) and COHFACE (www).
 
 Documentation
 -------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    guide_cvpr14
-   guide_chrom
    py_api_cvpr14
+
+   guide_chrom
    py_api_chrom
+
+   guide_ssr
+   py_api_ssr
+
+   guide_generic
 
 
 References
@@ -38,6 +48,16 @@ References
 .. [dehaan-tbe-2013]  *de Haan, G. & Jeanne, V*. **Robust Pulse Rate from Chrominance based rPPG** IEEE Transactions on Biomedical Engineering, 2013. `pdf <http://www.es.ele.tue.nl/~dehaan/pdf/169_ChrominanceBasedPPG.pdf>`__
 
 .. [wang-tbe-2015] *Wang, W., Stuijk, S. and de Haan, G*. **A Novel Algorithm for Remote Photoplesthymograpy: Spatial Subspace Rotation** IEEE Trans. On Biomedical Engineering, 2015
+
+Licensing
+---------
+
+This work is licensed under the GPLv3_.
+
+.. _GPLv3: http://www.gnu.org/licenses/gpl-3.0.en.html
+
+.. _gridtk: https://pypi.python.org/pypi/gridtk
+.. _bob: http://idiap.github.io/bob/
 
 Indices and tables
 ------------------
