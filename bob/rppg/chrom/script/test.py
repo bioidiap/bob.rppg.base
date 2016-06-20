@@ -45,7 +45,6 @@ def test_compute_gray_diff():
   diff = compute_gray_diff(image2, image2)
   assert diff == 0.0
   diff = compute_gray_diff(image1, image2)
-  print diff
   assert diff == 100*100 
 
 def test_select_stable_frames():
