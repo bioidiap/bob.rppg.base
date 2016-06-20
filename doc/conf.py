@@ -26,7 +26,6 @@ import pkg_resources
 extensions = [
   'sphinx.ext.todo',
   'sphinx.ext.coverage',
-  'sphinx.ext.imgmath',
   'sphinx.ext.ifconfig',
   'sphinx.ext.autodoc',
   'sphinx.ext.autosummary',
