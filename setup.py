@@ -41,6 +41,7 @@ setup(
 
   entry_points={
     'console_scripts': [
+        'rppg_bbox.py = bob.rppg.base.script.extract_boundingboxes:main',
         'cvpr14_extract_signals.py = bob.rppg.cvpr14.script.extract_signals:main',
         'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
         'cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main',
