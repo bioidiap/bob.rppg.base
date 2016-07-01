@@ -8,6 +8,7 @@ import numpy
 import collections
 
 import bob.ip.base
+import bob.ip.facedetect
 
 Point = collections.namedtuple('Point', 'y,x')
 BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
@@ -40,6 +41,32 @@ def load_bbox(fname):
           )
   return retval
 
+def load_bbox_new(fname):
+  """load_bbox_new(fname) -> bounding_boxes
+  Load bounding boxes from file.
+
+  This function loads bounding boxes for each frame of a video sequence.
+
+  **Parameters**
+
+    ``fname`` : (string)
+      Filename of the file containing the bounding boxes.
+
+  **Returns**
+
+    ``bounding_boxes``: (dict of BoundingBox)
+      Dictionary of bob.ip.facedetect.BoundingBox, the key is the frame number
+  """
+
+  retval = {}
+  with open(fname, 'rt') as f:
+    for row in f:
+      if not row.strip(): continue #empty
+      p = row.split()
+      # top left (y, x), size (height, width)
+      retval[int(p[0])] = bob.ip.facedetect.BoundingBox((float(p[2]), float(p[1])), (float(p[4]), float(p[3])))
+  return retval
+  
 
 def scale_image(image, width, height):
   """scale_image(image, width, height) -> scaled_image
@@ -95,6 +122,40 @@ def crop_face(image, bbx, facewidth):
   # made by André ... 
   face = image[:, bbx.topleft.y:(bbx.topleft.y + bbx.size.y), bbx.topleft.x:(bbx.topleft.x + bbx.size.x)]
   aspect_ratio = bbx.size.y / bbx.size.x # height/width
+  # TODO: bug with the aspect ratio, should be converted to float !! 
+  faceheight = facewidth * aspect_ratio
+  face = scale_image(face, faceheight, facewidth)
+  face = face.astype('uint8')
+  return face
+
+
+def crop_face_new(image, bbx, facewidth):
+  """crop_face(image, bbx, facewidth) -> face
+  
+  This function crops a face from an image.
+  
+  **Parameters**
+  
+    ``image`` : (3d numpy array )
+      The image containing the face.
+
+    ``bbx`` : (bob.ip.facedetect.BoundingBox)
+      The bounding box of the face.
+
+    ``facewidth``: (int)
+      The width of the face after cropping.
+
+  **Returns**
+    
+    ``face`` : (numpy array)
+      The face image.
+  """
+
+  # TODO: should be changed to use regular 
+  # BoundingBox class, and not the namedtuple
+  # made by André ... 
+  face = image[:, bbx.topleft[0]:(bbx.topleft[0] + bbx.size[0]), bbx.topleft[1]:(bbx.topleft[1] + bbx.size[1])]
+  aspect_ratio = bbx.size_f[0] / bbx.size_f[1] # height/width
   # TODO: bug with the aspect ratio, should be converted to float !! 
   faceheight = facewidth * aspect_ratio
   face = scale_image(face, faceheight, facewidth)

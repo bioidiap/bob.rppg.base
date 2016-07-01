@@ -9,8 +9,7 @@
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--bboxdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
-           [--npoints=<int>] [--facewidth=<int>] [--indent=<int>]
-           [--quality=<float>] [--distance=<int>]
+           [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
            [--overwrite] [--verbose ...] [--plot]
 
   %(prog)s (--help | -h)
@@ -32,7 +31,6 @@ Options:
   -b, --bgdir=<path>        The path to the directory where signal extracted 
                             from the background area will be stored [default: background]
   -n, --npoints=<int>       Number of good features to track [default: 40]
-  -w, --facewidth=<int>     Size of the cropped face [default: 48]
   -i, --indent=<int>        Indent (in percent of the face width) to apply to 
                             keypoints to get the mask [default: 10]
   -q, --quality=<float>     Quality level of the good features to track
@@ -75,7 +73,9 @@ import bob.io.base
 import bob.ip.facedetect
 
 from ...base.utils import load_bbox
+from ...base.utils import load_bbox_new
 from ...base.utils import crop_face
+from ...base.utils import crop_face_new
 
 from ..extract_utils import kp66_to_mask
 from ..extract_utils import get_good_features_to_track
@@ -181,7 +181,8 @@ def main(user_input=None):
       bbox_file = obj.make_path(args['--bboxdir'], '.face')
       logger.debug("Loading bounding boxes")
       try:
-        bounding_boxes = load_bbox(bbox_file)
+        #bounding_boxes = load_bbox(bbox_file)
+        bounding_boxes = load_bbox_new(bbox_file)
       except IOError as e:
         logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
     else:
@@ -208,12 +209,17 @@ def main(user_input=None):
         try: 
           bbox = bounding_boxes[i]
         except NameError:
-          bb, quality = bob.ip.facedetect.detect_single_face(frame)
+          bbox, quality = bob.ip.facedetect.detect_single_face(frame)
           # TODO: should be removed, use only the result
           # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-          bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
+          #bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
         
-        face = crop_face(frame, bbox, int(args['--facewidth']))
+        print bbox.size
+
+        # define the face width for the whole sequence
+        facewidth = bbox.size[1]
+        #face = crop_face(frame, bbox, int(args['--facewidth']))
+        face = crop_face_new(frame, bbox, facewidth)
         good_features = get_good_features_to_track(face,int(args['--npoints']), 
             float(args['--quality']), int(args['--distance']), bool(args['--plot']))
       else:
@@ -224,7 +230,8 @@ def main(user_input=None):
         # -> find the (affine) transformation relating previous corners with
         #    current corners
         # -> apply this transformation to the mask
-        face = crop_face(frame, prev_bb, int(args['--facewidth']))
+        #face = crop_face(frame, prev_bb, int(args['--facewidth']))
+        face = crop_face_new(frame, prev_bb, facewidth)
         good_features = track_features(prev_face, face, prev_features,
             bool(args['--plot']))
         project = find_transformation(prev_features, good_features)
@@ -245,9 +252,11 @@ def main(user_input=None):
         bb, quality = bob.ip.facedetect.detect_single_face(frame)
         # TODO: should be removed, use only the result
         # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-        prev_bb = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
-      
-      prev_face = crop_face(frame, prev_bb, int(args['--facewidth']))
+        #prev_bb = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
+        prev_bb = bb
+
+      #prev_face = crop_face(frame, prev_bb, int(args['--facewidth']))
+      prev_face = crop_face_new(frame, prev_bb, facewidth)
       prev_features = get_good_features_to_track(face, int(args['--npoints']),
           float(args['--quality']), int(args['--distance']),
           bool(args['--plot']))
