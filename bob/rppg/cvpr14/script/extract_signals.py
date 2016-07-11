@@ -72,9 +72,9 @@ import numpy
 import bob.io.base
 import bob.ip.facedetect
 
-from ...base.utils import load_bbox
+#from ...base.utils import load_bbox
 from ...base.utils import load_bbox_new
-from ...base.utils import crop_face
+#from ...base.utils import crop_face
 from ...base.utils import crop_face_new
 
 from ..extract_utils import kp66_to_mask
@@ -87,9 +87,9 @@ from ..extract_utils import compute_average_colors_mask
 
 # TODO: This is not really necessary, only needed
 # to be compliant with Andre's stuff - Guillaume HEUSCH, 11-04-2016
-import collections
-Point = collections.namedtuple('Point', 'y,x')
-BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
+#import collections
+#Point = collections.namedtuple('Point', 'y,x')
+#BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
 
 def main(user_input=None):
 
@@ -214,8 +214,6 @@ def main(user_input=None):
           # of detect_single_face - Guillaume HEUSCH, 11-04-2016
           #bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
         
-        print bbox.size
-
         # define the face width for the whole sequence
         facewidth = bbox.size[1]
         #face = crop_face(frame, bbox, int(args['--facewidth']))
