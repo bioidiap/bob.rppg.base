@@ -150,14 +150,9 @@ def crop_face_new(image, bbx, facewidth):
     ``face`` : (numpy array)
       The face image.
   """
-
-  # TODO: should be changed to use regular 
-  # BoundingBox class, and not the namedtuple
-  # made by André ... 
   face = image[:, bbx.topleft[0]:(bbx.topleft[0] + bbx.size[0]), bbx.topleft[1]:(bbx.topleft[1] + bbx.size[1])]
   aspect_ratio = bbx.size_f[0] / bbx.size_f[1] # height/width
-  # TODO: bug with the aspect ratio, should be converted to float !! 
-  faceheight = facewidth * aspect_ratio
+  faceheight = int(facewidth * aspect_ratio)
   face = scale_image(face, faceheight, facewidth)
   face = face.astype('uint8')
   return face
