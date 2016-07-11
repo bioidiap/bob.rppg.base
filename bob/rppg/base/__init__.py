@@ -1,5 +1,11 @@
 from . import script
 
+from utils import load_bbox_new
+from utils import crop_face_new
+
+from ..chrom.extract_utils import compute_mean_rgb 
+from ..chrom.extract_utils import project_chrominance 
+
 def get_config():
   """Returns a string containing the configuration information.
   """
