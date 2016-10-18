@@ -10,38 +10,7 @@ import collections
 import bob.ip.base
 import bob.ip.facedetect
 
-Point = collections.namedtuple('Point', 'y,x')
-BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
-
 def load_bbox(fname):
-  """load_bbox(fname) -> bounding_boxes
-  Load bounding boxes from file.
-
-  This function loads bounding boxes for each frame of a video sequence.
-
-  **Parameters**
-
-    ``fname`` : (string)
-      Filename of the file containing the bounding boxes.
-
-  **Returns**
-
-    ``bounding_boxes``: (dict of BoundingBox)
-      Dictionary of BoundingBox, the key is the frame number
-  """
-  retval = {}
-  with open(fname, 'rt') as f:
-    for row in f:
-      if not row.strip(): continue #empty
-      p = row.split()
-      retval[int(p[0])] = BoundingBox(
-          Point(int(p[2]), int(p[1])), #y, x
-          Point(int(p[4]), int(p[3])), #height, width
-          float(p[5]), #quality
-          )
-  return retval
-
-def load_bbox_new(fname):
   """load_bbox_new(fname) -> bounding_boxes
   Load bounding boxes from file.
 
@@ -61,7 +30,7 @@ def load_bbox_new(fname):
   retval = {}
   with open(fname, 'rt') as f:
     for row in f:
-      if not row.strip(): continue #empty
+      if not row.strip(): continue 
       p = row.split()
       # top left (y, x), size (height, width)
       retval[int(p[0])] = bob.ip.facedetect.BoundingBox((float(p[2]), float(p[1])), (float(p[4]), float(p[3])))
@@ -96,40 +65,6 @@ def scale_image(image, width, height):
 
 
 def crop_face(image, bbx, facewidth):
-  """crop_face(image, bbx, facewidth) -> face
-  
-  This function crops a face from an image.
-  
-  **Parameters**
-  
-    ``image`` : (3d numpy array )
-      The image containing the face.
-
-    ``bbx`` : (BoundingBox)
-      The bounding box of the face.
-
-    ``facewidth``: (int)
-      The width of the face after cropping.
-
-  **Returns**
-    
-    ``face`` : (numpy array)
-      The face image.
-  """
-
-  # TODO: should be changed to use regular 
-  # BoundingBox class, and not the namedtuple
-  # made by André ... 
-  face = image[:, bbx.topleft.y:(bbx.topleft.y + bbx.size.y), bbx.topleft.x:(bbx.topleft.x + bbx.size.x)]
-  aspect_ratio = bbx.size.y / bbx.size.x # height/width
-  # TODO: bug with the aspect ratio, should be converted to float !! 
-  faceheight = facewidth * aspect_ratio
-  face = scale_image(face, faceheight, facewidth)
-  face = face.astype('uint8')
-  return face
-
-
-def crop_face_new(image, bbx, facewidth):
   """crop_face(image, bbx, facewidth) -> face
   
   This function crops a face from an image.

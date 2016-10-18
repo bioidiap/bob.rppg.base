@@ -1,7 +1,7 @@
 from . import script
 
-from utils import load_bbox_new
-from utils import crop_face_new
+from utils import load_bbox
+from utils import crop_face
 
 from ..chrom.extract_utils import compute_mean_rgb 
 from ..chrom.extract_utils import project_chrominance 

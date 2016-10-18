@@ -10,7 +10,7 @@ Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--bboxdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
-           [--overwrite] [--verbose ...] [--plot]
+           [--overwrite] [--verbose ...] [--plot] [--gridcount]
 
   %(prog)s (--help | -h)
   %(prog)s (--version | -V)
@@ -43,6 +43,7 @@ Options:
   -v, --verbose             Increases the verbosity (may appear multiple times)
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
+  -g, --gridcount           Prints the number of objects to process and exits.                          
 
 
 Example:
@@ -72,10 +73,8 @@ import numpy
 import bob.io.base
 import bob.ip.facedetect
 
-#from ...base.utils import load_bbox
-from ...base.utils import load_bbox_new
-#from ...base.utils import crop_face
-from ...base.utils import crop_face_new
+from ...base.utils import load_bbox
+from ...base.utils import crop_face
 
 from ..extract_utils import kp66_to_mask
 from ..extract_utils import get_good_features_to_track
@@ -84,12 +83,6 @@ from ..extract_utils import find_transformation
 from ..extract_utils import get_current_mask_points
 from ..extract_utils import get_mask 
 from ..extract_utils import compute_average_colors_mask
-
-# TODO: This is not really necessary, only needed
-# to be compliant with Andre's stuff - Guillaume HEUSCH, 11-04-2016
-#import collections
-#Point = collections.namedtuple('Point', 'y,x')
-#BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
 
 def main(user_input=None):
 
@@ -158,6 +151,10 @@ def main(user_input=None):
           (pos, len(objects))
     objects = [objects[pos]]
 
+  if args['--gridcount']:
+    print len(objects)
+    sys.exit()
+
   # does the actual work - for every video in the available dataset, 
   # extract the signals and dumps the results to the corresponding directory
   for obj in objects:
@@ -181,8 +178,7 @@ def main(user_input=None):
       bbox_file = obj.make_path(args['--bboxdir'], '.face')
       logger.debug("Loading bounding boxes")
       try:
-        #bounding_boxes = load_bbox(bbox_file)
-        bounding_boxes = load_bbox_new(bbox_file)
+        bounding_boxes = load_bbox(bbox_file)
       except IOError as e:
         logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
     else:
@@ -210,14 +206,10 @@ def main(user_input=None):
           bbox = bounding_boxes[i]
         except NameError:
           bbox, quality = bob.ip.facedetect.detect_single_face(frame)
-          # TODO: should be removed, use only the result
-          # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-          #bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
         
         # define the face width for the whole sequence
         facewidth = bbox.size[1]
-        #face = crop_face(frame, bbox, int(args['--facewidth']))
-        face = crop_face_new(frame, bbox, facewidth)
+        face = crop_face(frame, bbox, facewidth)
         good_features = get_good_features_to_track(face,int(args['--npoints']), 
             float(args['--quality']), int(args['--distance']), bool(args['--plot']))
       else:
@@ -228,10 +220,8 @@ def main(user_input=None):
         # -> find the (affine) transformation relating previous corners with
         #    current corners
         # -> apply this transformation to the mask
-        #face = crop_face(frame, prev_bb, int(args['--facewidth']))
-        face = crop_face_new(frame, prev_bb, facewidth)
-        good_features = track_features(prev_face, face, prev_features,
-            bool(args['--plot']))
+        face = crop_face(frame, prev_bb, facewidth)
+        good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
         project = find_transformation(prev_features, good_features)
         if project is None: 
           logger.warn("Sequence {0}, frame {1} : No projection was found"
@@ -248,13 +238,9 @@ def main(user_input=None):
         prev_bb = bounding_boxes[i]
       except NameError:
         bb, quality = bob.ip.facedetect.detect_single_face(frame)
-        # TODO: should be removed, use only the result
-        # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-        #prev_bb = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
         prev_bb = bb
 
-      #prev_face = crop_face(frame, prev_bb, int(args['--facewidth']))
-      prev_face = crop_face_new(frame, prev_bb, facewidth)
+      prev_face = crop_face(frame, prev_bb, facewidth)
       prev_features = get_good_features_to_track(face, int(args['--npoints']),
           float(args['--quality']), int(args['--distance']),
           bool(args['--plot']))
