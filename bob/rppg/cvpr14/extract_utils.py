@@ -225,7 +225,7 @@ def track_features(previous, current, previous_points, plot=False):
   prev_gray = bob.ip.color.rgb_to_gray(previous)
   curr_gray = bob.ip.color.rgb_to_gray(current)
   from cv2 import calcOpticalFlowPyrLK
-  current_points = calcOpticalFlowPyrLK(prev_gray, curr_gray, previous_points)
+  current_points = calcOpticalFlowPyrLK(prev_gray, curr_gray, prevPts=previous_points, nextPts=None)
 
   if plot:
     display = numpy.copy(current)
