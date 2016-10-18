@@ -8,7 +8,7 @@
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--outdir=<path>] 
-           [--overwrite] [--verbose ...] [--plot]
+           [--overwrite] [--verbose ...] [--plot] [--gridcount]
   %(prog)s (--help | -h)
   %(prog)s (--version | -V)
 
@@ -30,6 +30,7 @@ Options:
   -v, --verbose             Increases the verbosity (may appear multiple times).
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
+  -g, --gridcount           Prints the number of objects to process and exits.
 
 
 
@@ -123,6 +124,10 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
+
+  if args['--gridcount']:
+    print len(objects)
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   if os.environ.has_key('SGE_TASK_ID'):
