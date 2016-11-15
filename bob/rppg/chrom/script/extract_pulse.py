@@ -10,7 +10,7 @@ Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--bboxdir=<path>] [--outdir=<path>]
            [--start=<int>] [--end=<int>] [--motion=<float>]
-           [--facewidth=<int>] [--threshold=<float>] [--skininit]
+           [--threshold=<float>] [--skininit]
            [--framerate=<int>] [--order=<int>]
            [--window=<int>] [--gridcount]
            [--overwrite] [--verbose ...] [--plot]
@@ -35,7 +35,6 @@ Options:
   --end=<int>               End frame index [default: 0].
   --motion=<float>          The percentage of frames you want to select where the 
                             signal is "stable". 0 mean all the sequence [default: 0.0]. 
-  --facewidth=<int>         The width of the cropped face [default: 64].
   --threshold=<float>       Threshold on the skin color probability [default: 0.5].
   --skininit                If you want to reinit the skin color distribution
                             at each frame.
@@ -88,12 +87,6 @@ from ..extract_utils import compute_mean_rgb
 from ..extract_utils import project_chrominance
 from ..extract_utils import compute_gray_diff
 from ..extract_utils import select_stable_frames 
-
-# TODO: This is not really necessary, only needed
-# to be compliant with Andre's stuff - Guillaume HEUSCH, 11-04-2016
-import collections
-Point = collections.namedtuple('Point', 'y,x')
-BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
 
 def main(user_input=None):
 
@@ -234,17 +227,14 @@ def main(user_input=None):
         try: 
           bbox = bounding_boxes[i]
         except NameError:
-          bb, quality = bob.ip.facedetect.detect_single_face(frame)
-          # TODO: should be removed, use only the result
-          # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-          bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
-        
+          bbox, quality = bob.ip.facedetect.detect_single_face(frame)
+
         # motion difference (if asked for)
         if float(args['--motion']) > 0 and (i < (len(video) - 1)) and (counter > 0):
-          current = crop_face(frame, bbox, int(args['--facewidth']))
+          current = crop_face(frame, bbox, bbox.size[1])
           diff_motion[counter-1] = compute_gray_diff(face, current)
         
-        face = crop_face(frame, bbox, int(args['--facewidth']))
+        face = crop_face(frame, bbox, bbox.size[1])
 
         if bool(args['--plot']) and args['--verbose'] >= 2:
           from matplotlib import pyplot
@@ -307,7 +297,6 @@ def main(user_input=None):
 
     # now that we have the chrominance signals, apply bandpass
     from scipy.signal import filtfilt
-    print chrom.shape
     x_bandpassed = numpy.zeros(nb_frames, dtype='float64')
     y_bandpassed = numpy.zeros(nb_frames, dtype='float64')
     x_bandpassed = filtfilt(bandpass_filter, numpy.array([1]), chrom[:, 0])
