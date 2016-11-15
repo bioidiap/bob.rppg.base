@@ -37,6 +37,7 @@ setup(
       "numpy",
       "scipy",
       "matplotlib",
+      "gridtk"
       ],
 
   entry_points={
