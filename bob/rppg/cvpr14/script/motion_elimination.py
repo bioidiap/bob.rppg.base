@@ -229,7 +229,11 @@ def main(user_input=None):
       green_segments, end_index = build_segments(color, int(args['--seglength']))
       # remove segments with high variability
       pruned_segments, gaps, cut_index = prune_segments(green_segments, threshold)
-      # build final signal
+      
+      # build final signal - but be sure that there are some segments left !
+      if pruned_segments.shape[0] == 0:
+        logger.warn("All segments have been discared in {0}".format(obj.stem))
+        continue
       if bool(args['--cvpr14']):
         corrected_green = build_final_signal_cvpr14(pruned_segments, gaps)
       else:
