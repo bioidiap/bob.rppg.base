@@ -183,7 +183,7 @@ def main(user_input=None):
       pyplot.semilogy(green_f, green_psd, 'g')
       xmax, xmin, ymax, ymin = pyplot.axis()
       pyplot.vlines(green_f[range_of_interest[max_idx]], ymin, ymax, color='red')
-      pyplot.title('Power spectrum of the green signal')
+      pyplot.title('Power spectrum of the green signal (HR = {0:.1f})'.format(hr))
       pyplot.show()
 
     output_data = numpy.array([hr], dtype='float64')
