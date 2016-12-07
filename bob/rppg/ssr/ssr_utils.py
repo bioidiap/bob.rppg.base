@@ -14,7 +14,7 @@ BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
 from bob.ip.skincolorfilter import SkinColorFilter
 skin_filter = SkinColorFilter()
 
-def get_skin_pixels(face_frame, index, facewidth, skininit, threshold, bounding_boxes=None, skin_frame=None, plot=False):
+def get_skin_pixels(face_frame, index, skininit, threshold, bounding_boxes=None, skin_frame=None, plot=False):
   """get_skin_pixels(face_frame, index, facewidth, skininit, threshold, bounding_boxes=None, skin_frame=None, plot=False) -> skin_pixels
  
     Get a list of skin colored pixels inside the given frame.
@@ -26,9 +26,6 @@ def get_skin_pixels(face_frame, index, facewidth, skininit, threshold, bounding_
 
     ``index`` (int):
       The index of the frame containing the face to be detected.
-
-    ``facewidth`` (int):
-      The width of the cropped face
 
     ``skininit`` (boolean):
       Flag if you want the parameters of the skin model to be re-estimated.
@@ -57,12 +54,9 @@ def get_skin_pixels(face_frame, index, facewidth, skininit, threshold, bounding_
   if bounding_boxes: 
     bbox = bounding_boxes[index]
   else:
-    bb, quality = bob.ip.facedetect.detect_single_face(face_frame)
-    # TODO: should be removed, use only the result
-    # of detect_single_face - Guillaume HEUSCH, 11-04-2016
-    bbox = BoundingBox(Point(*bb.topleft), Point(*bb.size), quality)
+    bbox, quality = bob.ip.facedetect.detect_single_face(face_frame)
 
-  face = crop_face(skin_frame, bbox, facewidth)
+  face = crop_face(skin_frame, bbox, bbox.size[1])
 
   if skininit:
     skin_filter.estimate_gaussian_parameters(face)

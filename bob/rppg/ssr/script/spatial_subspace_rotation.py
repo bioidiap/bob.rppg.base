@@ -9,7 +9,7 @@ Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot]
            [--dbdir=<path>] [--bboxdir=<path>] [--outdir=<path>]
-           [--facewidth=<int>] [--threshold=<float>] [--skininit] 
+           [--threshold=<float>] [--skininit] 
            [--stride=<int>] [--start=<int>] [--end=<int>] 
            [--overwrite] [--gridcount]
           
@@ -32,7 +32,6 @@ Options:
                             bounding boxes [default: bboxes]
   -o, --outdir=<path>       The path to the output directory where the resulting
                             pulse signal will be stored [default: pulse].
-  -w, --facewidth=<int>     Size of the cropped face [default: 64]
   --threshold=<float>       Threshold on the skin probability map [default: 0.5].
   --skininit                If you want to reinitialize the skin model at each frame.
   -s, --start=<int>         Index of the starting frame [default: 0].
@@ -221,17 +220,17 @@ def main(user_input=None):
         try:
           if counter == 0:
             # init skin parameters in any cases if it's the first frame
-            skin_pixels = get_skin_pixels(frame, i, int(args['--facewidth']), 
+            skin_pixels = get_skin_pixels(frame, i, 
                True, float(args['--threshold']), bounding_boxes)
           else:
-            skin_pixels = get_skin_pixels(frame, i, int(args['--facewidth']), 
+            skin_pixels = get_skin_pixels(frame, i, 
                bool(args['--skininit']), float(args['--threshold']), bounding_boxes)
         except NameError:
           if counter == 0:
-            skin_pixels = get_skin_pixels(frame, i, int(args['--facewidth']), 
+            skin_pixels = get_skin_pixels(frame, i, 
                bool(args['--skininit']), float(args['--threshold']))
           else:
-            skin_pixels = get_skin_pixels(frame, i, int(args['--facewidth']), 
+            skin_pixels = get_skin_pixels(frame, i, 
                bool(args['--skininit']), float(args['--threshold']))
         logger.debug("There are {0} skin pixels in this frame".format(skin_pixels.shape[1]))
         
@@ -243,10 +242,10 @@ def main(user_input=None):
           while skin_pixels.shape[1] <= 0:
             
             try:
-              skin_pixels = get_skin_pixels(video[i-k], (i-k), int(args['--facewidth']), 
+              skin_pixels = get_skin_pixels(video[i-k], (i-k),  
                  bool(args['--skininit']), float(args['--threshold']), bounding_boxes, skin_frame=frame)
             except NameError:
-              skin_pixels = get_skin_pixels(video[i-k], (i-k), int(args['--facewidth']), 
+              skin_pixels = get_skin_pixels(video[i-k], (i-k), 
                  bool(args['--skininit']), float(args['--threshold']), skin_frame=frame)
             
             k += 1
