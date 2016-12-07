@@ -39,6 +39,9 @@ Documentation
 
    guide_generic
 
+Reproducing the result in the paper
+-----------------------------------
+
 
 References
 ----------
