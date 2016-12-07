@@ -204,7 +204,7 @@ def main(user_input=None):
       ax[3].set_title('Bandpassed signal')
       pyplot.show()
 
-    output_data = numpy.copy(green_bandpassed) 
+    output_data = numpy.copy(green_bandpassed)
 
     # saves the data into an HDF5 file with a '.hdf5' extension
     outdir = os.path.dirname(output)
