@@ -51,6 +51,7 @@ setup(
         'chrom_pulse.py = bob.rppg.chrom.script.extract_pulse:main',
         'chrom_pulse_from_mask.py = bob.rppg.chrom.script.extract_pulse_from_mask:main',
         'ssr_pulse.py = bob.rppg.ssr.script.spatial_subspace_rotation:main',
+        'ssr_pulse_from_mask.py = bob.rppg.ssr.script.ssr_from_pulse:main',
         'rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main',
         'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main'
         ],
