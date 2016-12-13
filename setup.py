@@ -44,10 +44,12 @@ setup(
     'console_scripts': [
         'rppg_bbox.py = bob.rppg.base.script.extract_boundingboxes:main',
         'cvpr14_extract_signals.py = bob.rppg.cvpr14.script.extract_signals:main',
+        'cvpr14_video2skin.py = bob.rppg.cvpr14.script.video2skin:main',
         'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
         'cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main',
         'cvpr14_filter.py = bob.rppg.cvpr14.script.filter:main',
         'chrom_pulse.py = bob.rppg.chrom.script.extract_pulse:main',
+        'chrom_pulse_from_mask.py = bob.rppg.chrom.script.extract_pulse_from_mask:main',
         'ssr_pulse.py = bob.rppg.ssr.script.spatial_subspace_rotation:main',
         'rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main',
         'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main'
