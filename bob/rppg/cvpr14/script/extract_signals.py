@@ -10,6 +10,7 @@ Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--bboxdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
+           [--wholeface]
            [--overwrite] [--verbose ...] [--plot] [--gridcount]
 
   %(prog)s (--help | -h)
@@ -43,7 +44,8 @@ Options:
   -v, --verbose             Increases the verbosity (may appear multiple times)
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
-  -g, --gridcount           Prints the number of objects to process and exits.                          
+  -g, --gridcount           Prints the number of objects to process and exits.
+  -w, --wholeface           Consider the whole face region instead of the mask.
 
 
 Example:
@@ -83,6 +85,7 @@ from ..extract_utils import find_transformation
 from ..extract_utils import get_current_mask_points
 from ..extract_utils import get_mask 
 from ..extract_utils import compute_average_colors_mask
+from ..extract_utils import compute_average_colors_wholeface
 
 def main(user_input=None):
 
@@ -199,8 +202,9 @@ def main(user_input=None):
         # -> infer the mask from the keypoints
         # -> detect the face
         # -> get "good features" inside the face
-        kpts = obj.load_drmf_keypoints()
-        mask_points, mask = kp66_to_mask(frame, kpts, int(args['--indent']), bool(args['--plot']))
+        if not bool(args['--wholeface']):
+          kpts = obj.load_drmf_keypoints()
+          mask_points, mask = kp66_to_mask(frame, kpts, int(args['--indent']), bool(args['--plot']))
 
         try: 
           bbox = bounding_boxes[i]
@@ -210,8 +214,10 @@ def main(user_input=None):
         # define the face width for the whole sequence
         facewidth = bbox.size[1]
         face = crop_face(frame, bbox, facewidth)
-        good_features = get_good_features_to_track(face,int(args['--npoints']), 
-            float(args['--quality']), int(args['--distance']), bool(args['--plot']))
+        
+        if not bool(args['--wholeface']):
+          good_features = get_good_features_to_track(face,int(args['--npoints']), 
+              float(args['--quality']), int(args['--distance']), bool(args['--plot']))
       else:
         # subsequent frames:
         # -> crop the face with the bounding_boxes of the previous frame (so
@@ -221,14 +227,15 @@ def main(user_input=None):
         #    current corners
         # -> apply this transformation to the mask
         face = crop_face(frame, prev_bb, facewidth)
-        good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
-        project = find_transformation(prev_features, good_features)
-        if project is None: 
-          logger.warn("Sequence {0}, frame {1} : No projection was found"
-              " between previous and current frame, mask from previous frame will be used"
-              .format(obj.stem, i))
-        else:
-          mask_points = get_current_mask_points(mask_points, project)
+        if not bool(args['--wholeface']):
+          good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
+          project = find_transformation(prev_features, good_features)
+          if project is None: 
+            logger.warn("Sequence {0}, frame {1} : No projection was found"
+                " between previous and current frame, mask from previous frame will be used"
+                .format(obj.stem, i))
+          else:
+            mask_points = get_current_mask_points(mask_points, project)
 
       # update stuff for the next frame:
       # -> the previous face is the face in this frame, with its bbox (and not
@@ -240,19 +247,23 @@ def main(user_input=None):
         bb, quality = bob.ip.facedetect.detect_single_face(frame)
         prev_bb = bb
 
-      prev_face = crop_face(frame, prev_bb, facewidth)
-      prev_features = get_good_features_to_track(face, int(args['--npoints']),
-          float(args['--quality']), int(args['--distance']),
-          bool(args['--plot']))
-      if prev_features is None:
-        logger.warn("Sequence {0}, frame {1} No features to track"  
-            " detected in the current frame, using the previous ones"
-            .format(obj.stem, i))
-        prev_features = good_features
+      
+      if not bool(args['--wholeface']):
+        prev_face = crop_face(frame, prev_bb, facewidth)
+        prev_features = get_good_features_to_track(face, int(args['--npoints']),
+            float(args['--quality']), int(args['--distance']),
+            bool(args['--plot']))
+        if prev_features is None:
+          logger.warn("Sequence {0}, frame {1} No features to track"  
+              " detected in the current frame, using the previous ones"
+              .format(obj.stem, i))
+          prev_features = good_features
 
-      # get the bottom face region average colors
-      face_mask = get_mask(frame, mask_points)
-      face_color[i] = compute_average_colors_mask(frame, face_mask, bool(args['--plot']))
+        # get the bottom face region average colors
+        face_mask = get_mask(frame, mask_points)
+        face_color[i] = compute_average_colors_mask(frame, face_mask, bool(args['--plot']))
+      else:
+        face_color[i] = compute_average_colors_wholeface(face, bool(args['--plot']))
 
       # get the background region average colors
       bg_mask = numpy.zeros((frame.shape[1], frame.shape[2]), dtype=bool)
