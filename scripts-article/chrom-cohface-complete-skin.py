@@ -2,22 +2,22 @@ import os, sys
 from gridtk.sge import JobManagerSGE
 
 # directories and file
-base_expe_dir = 'experiments/paper/chrom-cohface-clean/'
+base_expe_dir = 'experiments/paper/chrom-cohface-complete-skin/'
 pulse_dir = base_expe_dir + 'pulse'
 hr_dir = base_expe_dir + 'hr'
 results_dir_train = base_expe_dir + 'results-train'
 results_dir_test = base_expe_dir + 'results-test'
 
-number_of_jobs = 80 
+number_of_jobs = 160
 framerate = 20
 
 # parameters
-skin_threshold = 0.2
-order = 32
+skin_threshold = 0.3
+order = 64
 window = 0
 
 n_segments = 8
-nfft = 1024
+nfft = 512
 
 # write a file with the parameters - useful to keep track sometimes ..
 param_file = base_expe_dir + '/parameters.txt'
@@ -41,7 +41,7 @@ def check_job_status(job_id):
 
 # pulse extraction
 manager = JobManagerSGE(database='submitted.sql3', wrapper_script=os.path.abspath('./bin/jman'))
-extract = ['./bin/chrom_pulse.py', 'cohface', '--protocol', 'clean', '--dbdir', 'cohface', '--bboxdir', 'bounding-boxes', '--outdir', str(pulse_dir), '--threshold', str(skin_threshold), '--framerate', str(framerate),  '--order', str(order), '--window', str(window), '--skininit']
+extract = ['./bin/chrom_pulse.py', 'cohface', '--dbdir', 'cohface', '--bboxdir', 'bounding-boxes', '--outdir', str(pulse_dir), '--threshold', str(skin_threshold), '--framerate', str(framerate), '--order', str(order), '--window', str(window)]
 job_id = manager.submit(extract, array=(1, number_of_jobs, 1))
 print 'Running job {0} (extraction) on the grid ...'.format(job_id)
 
@@ -50,11 +50,11 @@ job_status = check_job_status(job_id)
 while (job_status != 'success'):
   job_status = check_job_status(job_id)
 
-os.system('./bin/chrom_pulse.py cohface --protocol clean --dbdir cohface --bboxdir bounding-boxes --outdir ' + str(pulse_dir) + ' --threshold ' + str(skin_threshold) + ' --framerate ' + str(framerate) + ' --window ' + str(window) + ' --skininit -v')
-
+os.system('./bin/chrom_pulse.py cohface --dbdir cohface --bboxdir bounding-boxes --outdir ' + str(pulse_dir) + ' --threshold ' + str(skin_threshold) + ' --framerate ' + str(framerate) + ' --order ' + str(order) + ' --window ' + str(window) + ' -v')
+ 
 # computing heart-rate
-os.system('./bin/rppg_get_heart_rate.py cohface --protocol clean --indir ' + pulse_dir + ' --outdir ' + hr_dir + ' --framerate ' + str(framerate) + ' --nsegments ' +str(n_segments) + ' --nfft ' + str(nfft) + ' -v')
+os.system('./bin/rppg_get_heart_rate.py cohface --indir ' + pulse_dir + ' --outdir ' + hr_dir + ' --framerate ' + str(framerate) + ' --nsegments ' +str(n_segments) + ' --nfft ' + str(nfft) + ' -v')
 
 # computing performance
-os.system('./bin/rppg_compute_performance.py cohface --protocol clean --subset train --subset dev --indir ' + hr_dir + ' --outdir ' + results_dir_train + ' -v')
-os.system('./bin/rppg_compute_performance.py cohface --protocol clean --subset test --indir ' + hr_dir + ' --outdir ' + results_dir_test + ' -v')
+os.system('./bin/rppg_compute_performance.py cohface --subset train --subset dev --indir ' + hr_dir + ' --outdir ' + results_dir_train + ' -v')
+os.system('./bin/rppg_compute_performance.py cohface --subset test --indir ' + hr_dir + ' --outdir ' + results_dir_test + ' -v')
