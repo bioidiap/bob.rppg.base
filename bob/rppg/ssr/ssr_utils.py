@@ -3,13 +3,9 @@
 # Guillaume HEUSCH <guillaume.heusch@idiap.ch>
 # Tue 26 Apr 17:19:09 CEST 2016
 
-import collections
 import numpy
 import bob.ip.base
 from ..base.utils import crop_face
-
-Point = collections.namedtuple('Point', 'y,x')
-BoundingBox = collections.namedtuple('BoundingBox', 'topleft,size,quality')
 
 from bob.ip.skincolorfilter import SkinColorFilter
 skin_filter = SkinColorFilter()
