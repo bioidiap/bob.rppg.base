@@ -327,3 +327,32 @@ def compute_average_colors_mask(image, mask, plot=False):
 
   green = image[1, mask]
   return numpy.mean(green)
+
+def compute_average_colors_wholeface(image, plot=False):
+  """compute_average_colors_mask(image [, plot]) ->  green_color
+  
+  This function computes the average green color within the provided face image 
+
+  **Parameters**
+  
+    ``image`` (3d numpy array ):
+      The cropped face image
+
+    ``plot`` ([Optional] boolean):
+      Plot the mask as an overlay on the original image.
+      Defaults to False.
+  
+  **Returns**
+
+    ``color`` (float):
+      The average green color inside the face 
+  """
+  if plot:
+    from matplotlib import pyplot
+    display = numpy.copy(image)
+    pyplot.imshow(numpy.rollaxis(numpy.rollaxis(display, 2),2))
+    pyplot.title('Face area used to compute the mean green value')
+    pyplot.show()
+
+  green = image[1, :]
+  return numpy.mean(green)
