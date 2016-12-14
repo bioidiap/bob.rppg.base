@@ -142,12 +142,12 @@ def main(user_input=None):
   for obj in objects:
 
     # load the heart rate 
-    logger.debug("Loading computed heart rate from `%s'...", obj.stem)
+    logger.debug("Loading computed heart rate from `%s'...", obj.path)
     hr_file = obj.make_path(args['--indir'], '.hdf5')
     try:
       hr = bob.io.base.load(hr_file)
     except (IOError, RuntimeError) as e:
-      logger.warn("Skipping file `%s' (no heart rate file available)", obj.stem)
+      logger.warn("Skipping file `%s' (no heart rate file available)", obj.path)
       continue
 
     hr = hr[0]

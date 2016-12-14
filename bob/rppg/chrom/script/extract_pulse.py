@@ -186,7 +186,7 @@ def main(user_input=None):
     if (end_index == 0):
       end_index = len(video) 
     if end_index > len(video):
-      logger.warn("Skipping Sequence {0} : not long enough ({1})".format(obj.stem, len(video)))
+      logger.warn("Skipping Sequence {0} : not long enough ({1})".format(obj.path, len(video)))
       continue
 
     # number of final frames
@@ -206,9 +206,9 @@ def main(user_input=None):
       try:
         bounding_boxes = load_bbox(bbox_file)
       except IOError as e:
-        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
+        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
     else:
-      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
+      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
 
     # skin color filter
     skin_filter = bob.ip.skincolorfilter.SkinColorFilter()

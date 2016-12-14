@@ -190,9 +190,9 @@ def main(user_input=None):
       try:
         bounding_boxes = load_bbox(bbox_file)
       except IOError as e:
-        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
+        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
     else:
-      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.stem)
+      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
 
     # the result -> the pulse signal 
     output_data = numpy.zeros(nb_final_frames, dtype='float64')
@@ -239,7 +239,7 @@ def main(user_input=None):
         if project is None: 
           logger.warn("Sequence {0}, frame {1} : No projection was found"
               " between previous and current frame, mask from previous frame will be used"
-              .format(obj.stem, i))
+              .format(obj.path, i))
         else:
           mask_points = get_current_mask_points(mask_points, project)
 
@@ -261,7 +261,7 @@ def main(user_input=None):
       if prev_features is None:
         logger.warn("Sequence {0}, frame {1} No features to track"  
             " detected in the current frame, using the previous ones"
-            .format(obj.stem, i))
+            .format(obj.path, i))
         prev_features = good_features
 
       # get the bottom face region

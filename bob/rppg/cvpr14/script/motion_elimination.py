@@ -163,17 +163,17 @@ def main(user_input=None):
     for obj in objects:
 
       # load the llumination corrected signal
-      logger.debug("Computing standard deviations in color signals from `%s'...", obj.stem)
+      logger.debug("Computing standard deviations in color signals from `%s'...", obj.path)
       illum_file = obj.make_path(args['--indir'], '.hdf5')
       try:
         color = bob.io.base.load(illum_file)
       except (IOError, RuntimeError) as e:
-        logger.warn("Skipping file `%s' (no color signals file available)",  obj.stem)
+        logger.warn("Skipping file `%s' (no color signals file available)",  obj.path)
         continue
 
       # skip this file if there are NaN ...
       if numpy.isnan(numpy.sum(color)):
-        logger.warn("Skipping file `%s' (NaN in file)",  obj.stem)
+        logger.warn("Skipping file `%s' (NaN in file)",  obj.path)
         continue
       
       # get the standard deviation in the segments
@@ -211,18 +211,18 @@ def main(user_input=None):
         continue
 
       # load the color signals
-      logger.debug("Eliminating motion in color signals from `%s'...", obj.stem)
+      logger.debug("Eliminating motion in color signals from `%s'...", obj.path)
       illum_file = obj.make_path(args['--indir'], '.hdf5')
       try:
         color = bob.io.base.load(illum_file)
       except (IOError, RuntimeError) as e:
         logger.warn("Skipping file `%s' (no color signals file available)",
-            obj.stem)
+            obj.path)
         continue
         
       # skip this file if there are NaN ...
       if numpy.isnan(numpy.sum(color)):
-        logger.warn("Skipping file `%s' (NaN in file)",  obj.stem)
+        logger.warn("Skipping file `%s' (NaN in file)",  obj.path)
         continue
 
       # divide the signals into segments
@@ -232,7 +232,7 @@ def main(user_input=None):
       
       # build final signal - but be sure that there are some segments left !
       if pruned_segments.shape[0] == 0:
-        logger.warn("All segments have been discared in {0}".format(obj.stem))
+        logger.warn("All segments have been discared in {0}".format(obj.path))
         continue
       if bool(args['--cvpr14']):
         corrected_green = build_final_signal_cvpr14(pruned_segments, gaps)

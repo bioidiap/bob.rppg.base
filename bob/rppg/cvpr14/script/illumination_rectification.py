@@ -166,7 +166,7 @@ def main(user_input=None):
     try:
       face = bob.io.base.load(face_file)
     except (IOError, RuntimeError) as e:
-      logger.warn("Skipping file `%s' (no face file available)", obj.stem)
+      logger.warn("Skipping file `%s' (no face file available)", obj.path)
       continue
 
     # load the color signal of the background
@@ -174,7 +174,7 @@ def main(user_input=None):
     try:
       bg = bob.io.base.load(bg_file)
     except (IOError, RuntimeError) as e:
-      logger.warn("Skipping file `%s' (no background file available)", obj.stem)
+      logger.warn("Skipping file `%s' (no background file available)", obj.path)
       continue
 
     # indices where to start and to end the processing
@@ -184,10 +184,10 @@ def main(user_input=None):
     if (end_index == 0):
       end_index = face.shape[0]
     if end_index > face.shape[0]:
-      logger.warn("Skipping Sequence {0} : not long enough ({1})".format(obj.stem, face.shape[0]))
+      logger.warn("Skipping Sequence {0} : not long enough ({1})".format(obj.path, face.shape[0]))
       continue
 
-    logger.info("Processing sequence {0} ...".format(obj.stem))
+    logger.info("Processing sequence {0} ...".format(obj.path))
 
     # truncate the signals if needed
     face = face[start_index:end_index]

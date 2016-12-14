@@ -168,18 +168,18 @@ def main(user_input=None):
       continue
 
     # load the corrected color signals of shape (3, nb_frames)
-    logger.info("Filtering in signal from `%s'...", obj.stem)
+    logger.info("Filtering in signal from `%s'...", obj.path)
     motion_file = obj.make_path(args['--indir'], '.hdf5')
     try:
       motion_corrected_signal = bob.io.base.load(motion_file)
     except (IOError, RuntimeError) as e:
-      logger.warn("Skipping file `%s' (no motion corrected signal file available)", obj.stem)
+      logger.warn("Skipping file `%s' (no motion corrected signal file available)", obj.path)
       continue
 
     # check whether the signal is long enough to be filtered with the bandpass of this order
     padlen = 3 * len(b)
     if motion_corrected_signal.shape[0] < padlen:
-      logger.warn("Skipping file {0} (unable to bandpass filter it, the signal is probably not long enough)".format(obj.stem))
+      logger.warn("Skipping file {0} (unable to bandpass filter it, the signal is probably not long enough)".format(obj.path))
       continue
 
     # detrend

@@ -141,12 +141,12 @@ def main(user_input=None):
       continue
 
     # load the filtered color signals of shape (3, nb_frames)
-    logger.info("Frequency analysis of color signals from `%s'...", obj.stem)
+    logger.info("Frequency analysis of color signals from `%s'...", obj.path)
     filtered_file = obj.make_path(args['--indir'], '.hdf5')
     try:
       signal = bob.io.base.load(filtered_file)
     except (IOError, RuntimeError) as e:
-      logger.warn("Skipping file `%s' (no color signals file available)", obj.stem)
+      logger.warn("Skipping file `%s' (no color signals file available)", obj.path)
       continue
 
     if bool(args['--plot']):
@@ -160,7 +160,7 @@ def main(user_input=None):
 
     # the number of points for FFT should be larger than the segment length ...
     if int(args['--nfft']) < segment_length:
-      logger.warn("Skipping file `%s' (nfft < nperseg)", obj.stem)
+      logger.warn("Skipping file `%s' (nfft < nperseg)", obj.path)
       continue
 
     nfft = int(args['--nfft'])

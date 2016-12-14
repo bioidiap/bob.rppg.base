@@ -186,7 +186,7 @@ def main(user_input=None):
       bounding_boxes = load_bbox(bbox_file)
     except IOError as e:
       logger.warn("Skipping file `%s' (no bounding box file available)",
-          obj.stem)
+          obj.path)
       continue
 
     # average colors of the skin color 
