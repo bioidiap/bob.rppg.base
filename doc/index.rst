@@ -20,13 +20,15 @@ This module contains the implementation of different remote photoplesthymography
 
 Also, we provide scripts to infer the heart-rate from the pulse signals, and
 to evaluate global performance on two different databases: Manhob HCI-Tagging 
-(http://mahnob-db.eu/hci-tagging/) and COHFACE (www).
+(http://mahnob-db.eu/hci-tagging/) and COHFACE (http://www.idiap.ch/dataset/cohface).
 
 Documentation
 -------------
 
 .. toctree::
    :maxdepth: 3
+   
+   guide_bbox
 
    guide_cvpr14
    py_api_cvpr14
@@ -37,7 +39,7 @@ Documentation
    guide_ssr
    py_api_ssr
 
-   guide_generic
+   guide_performance
 
 Reproducing the result in the paper
 -----------------------------------

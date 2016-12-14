@@ -27,7 +27,7 @@ Generating performance measures
 In order to get some insights on how good the computed heart-rates match the
 ground truth, you should execute the following script::
 
-  $ ./bin/cvpr14_generate_results.py hci -v -P
+  $ ./bin/rppg_compute_performance.py hci --indir heart-rate -v -P 
 
 This will output and save various statistics (Root Mean Square Error, 
 Pearson correlation) as well as figures (error distribution, scatter plot)
