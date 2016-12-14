@@ -293,12 +293,12 @@ def main(user_input=None):
         output_data[tau:i] += (p - numpy.mean(p)) 
         
     # plot the pulse signal
-    #if bool(args['--plot']):
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(range(nb_final_frames), output_data)
-    plt.show()
+    if bool(args['--plot']):
+      import matplotlib.pyplot as plt
+      fig = plt.figure()
+      ax = fig.add_subplot(111)
+      ax.plot(range(nb_final_frames), output_data)
+      plt.show()
 
     # saves the data into an HDF5 file with a '.hdf5' extension
     outdir = os.path.dirname(output)
