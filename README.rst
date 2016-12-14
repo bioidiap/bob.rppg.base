@@ -31,7 +31,7 @@ This package heavily depends on bob_, so if you use this package and/or its resu
         publisher = {ACM Press},
     }
 
-
+Note that currently, bob and this package are supported for Linux distributions only
 
     1. Install bob using conda as per instructions on the `bob website <https://www.idiap.ch/software/bob/install>`_
     2. Activate your conda environment containing bob
@@ -55,5 +55,18 @@ This package heavily depends on bob_, so if you use this package and/or its resu
 Reproducing article results
 ---------------------------
 
-Have a look at the scripts-article folder and the README within.
+After having downloaded the database(s), you will be able to reproduce complete experiments
+presented in the accompanying paper. To do so, you will first have to provide a database 
+directory in the root folder of the package. 
+
+We advise you to first use the COHFACE database since it is smaller and that the bounding boxes are provided.
+Now create a symlink to the database directory containing the raw data::
+
+    $ ln -s /path/to/the/cohface/database cohface
+
+For instance, to reproduce results of the CHROM algorithm reported in Table 5::
+
+    $ ./bin/python scripts-article/chrom-cohface-clean.py
+
+Have a look at the scripts-article folder and the README within for more examples.
 

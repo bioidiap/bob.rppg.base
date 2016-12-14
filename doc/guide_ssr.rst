@@ -36,7 +36,7 @@ After having applied the skin color filter, the full algorithm is applied,
 as described in Algorithm 1 in the paper. To get the pulse signal, do
 the following::
 
-  $ ./bin/ssr_pulse.py hci
+  $ ./bin/ssr_pulse.py cohface
 
 The result of this script will be the pulse signal. 
 The output of this step normally goes into a directory named ``pulse``.
@@ -46,11 +46,11 @@ The output of this step normally goes into a directory named ``pulse``.
    The execution of this script is very slow - mainly due to the face detection. 
    You can speed it up using the gridtk_ (especially, if you're at Idiap). For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/ssr_pulse.py hci
+     $ ./bin/jman sub -t 3490 -- ./bin/ssr_pulse.py cohface
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/ssr_pulse.py hci --gridcount
+     $ ./bin/ssr_pulse.py cohface --gridcount
 
 
 .. _gridtk: https://pypi.python.org/pypi/gridtk

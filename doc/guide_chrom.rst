@@ -42,7 +42,7 @@ before the final pulse signal is built.
 
 To extract the pulse signal from video sequences, do the following::
 
-  $ ./bin/chrom_pulse.py hci -vv
+  $ ./bin/chrom_pulse.py cohface -vv
 
 To see the full options, including parameters and protocols, type:: 
 
@@ -56,11 +56,11 @@ the options for this application) named ``pulse``.
    The execution of this script is very slow - mainly due to the face detection. 
    You can speed it up using the gridtk_ (especially, if you're at Idiap). For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/chrom_pulse.py hci
+     $ ./bin/jman sub -t 3490 -- ./bin/chrom_pulse.py cohface
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/chrom_pulse.py hci --gridcount
+     $ ./bin/chrom_pulse.py cohface --gridcount
 
 
 .. _gridtk: https://pypi.python.org/pypi/gridtk

@@ -2,3 +2,4 @@ include README.rst bootstrap-buildout.py buildout.cfg COPYING version.txt requir
 recursive-include doc *.py *.rst
 recursive-include scripts-article *.py *.rst
 include scripts-article/README
+include doc/img/*
