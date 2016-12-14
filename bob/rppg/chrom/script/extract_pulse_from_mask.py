@@ -132,6 +132,9 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
+    if args['--bboxdir'] is None:
+      import pkg_resources
+      args['--bboxdir'] = pkg_resources.resource_filename('bob.db.cohface', 'data/bbox')
 
   elif args['hci']:
     import bob.db.hci_tagging
