@@ -1,9 +1,8 @@
-In this folder, you can find the scripts that have been 
-used to generate the results in the article.
+In this folder, you can find the scripts that have been used to generate the results in the article.
 
-Be sure to move the script of interest one level up before launching it !
-(i.e. mv li-cohface-clean.py ..)
+they assume that the path to the database is either 'hci' or 'cohface' in the package root folder (this could be a symlink though)
 
+---------------------------------------------
 
 chrom-cohface-clean-natural.py          --> Table 7 column 2 
 chrom-cohface-clean.py                  --> Table 5, line 2

@@ -5,7 +5,7 @@ current_folder = os.path.dirname(os.path.abspath(__file__))
 root_folder = os.path.dirname(current_folder)
 bin_folder = os.path.join(root_folder, 'bin/')
 
-base_expe_dir = os.path.join(root_folder, 'experiments/paper/li-cohface-complete-skin/')
+base_expe_dir = os.path.join(root_folder, 'experiments/paper/li-cohface-complete-wholeface/')
 facedir = base_expe_dir + 'face'
 bgdir = base_expe_dir + 'bg'
 illumination_dir = base_expe_dir + 'illumination'
@@ -19,20 +19,18 @@ results_dir_test = base_expe_dir + 'results-test'
 framerate = 20
 
 #parameters
-skin_threshold = 0.8
-
 adaptation = 0.01
-filter_length = 3
+filter_length = 5
 
 segment_length = 40
 cutoff = 0.1
 
 Lambda = 100
 window = 3
-order = 128
+order = 64
 
-n_segments = 8
-nfft = 512
+n_segments = 4
+nfft = 4096
 
 # write a file with the parameters - useful to keep track sometimes ..
 param_file = base_expe_dir + '/parameters.txt'
@@ -52,7 +50,7 @@ f.write('npoints FFT = ' + str(nfft) + '\n')
 f.close()
 
 # signals extraction
-os.system(bin_folder + 'cvpr14_video2skin.py cohface --dbdir cohface --outdir ' + str(facedir) + ' --threshold ' + str(skin_threshold) + ' -v')
+os.system(bin_folder + 'cvpr14_extract_signals.py cohface --dbdir cohface --facedir ' + str(facedir) + ' --bgdir ' + str(bgdir) + ' --wholeface -v')
 
 # illumination correction
 os.system(bin_folder + 'cvpr14_illumination.py cohface --facedir ' + facedir + ' --bgdir ' + bgdir + ' --outdir ' + illumination_dir + ' --step ' + str(adaptation) + ' --length ' + str(filter_length) + ' -v')
