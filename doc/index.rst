@@ -45,9 +45,6 @@ Documentation
 
    guide_performance
 
-Reproducing the result in the paper
------------------------------------
-
 
 References
 ----------

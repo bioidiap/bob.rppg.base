@@ -41,7 +41,7 @@ Note that currently, bob and this package are supported for Linux distributions 
        $ python bootstrap-buildout.py
        $ ./bin/buildout
     
-    4. Download the metadata Manhob HCI Tagging database::
+    4. Download the metadata for the Manhob HCI Tagging database::
        
        $ ./bin/bob_dbmanage.py hci_tagging download --force
 
