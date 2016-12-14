@@ -165,8 +165,6 @@ def main(user_input=None):
     mean_error_percentage += numpy.abs(error)/gt
 
   # compute global statistics 
-  mean_text = "Mean Error = {0:.2f}". format(numpy.mean(error))
-  std_text = "Standard Deviation = {0:.2f}". format(numpy.std(errors))
   rmse /= len(errors)
   rmse = numpy.sqrt(rmse)
   rmse_text = "Root Mean Squared Error = {0:.2f}". format(rmse)
@@ -178,8 +176,6 @@ def main(user_input=None):
  
   logger.info("==================")
   logger.info("=== STATISTICS ===")
-  logger.info(mean_text)
-  logger.info(std_text)
   logger.info(rmse_text)
   logger.info(mean_err_percent_text)
   logger.info(pearson_text)
@@ -187,8 +183,6 @@ def main(user_input=None):
   # statistics in a text file
   stats_filename = os.path.join(outdir, 'stats.txt')
   stats_file = open(stats_filename, 'w')
-  stats_file.write(mean_text + "\n")
-  stats_file.write(std_text + "\n")
   stats_file.write(rmse_text + "\n")
   stats_file.write(mean_err_percent_text + "\n")
   stats_file.write(pearson_text + "\n")
