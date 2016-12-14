@@ -1,8 +1,6 @@
 .. Guillaume HEUSCH <guillaume.heusch@idiap.ch>
 .. Fri 15 Apr 15:09:35 CEST 2016
 
-.. image:: https://gitlab.idiap.ch/biometric/bob.rppg.base/badges/master/build.svg?
-
 ========================================
 Remote Heart Rate Measurement Algorithms
 ========================================
@@ -11,7 +9,13 @@ This package implements several algorithms for remote photoplesthymography (rPPG
 
   - "Remote heart rate measurement from face videos under realistic situations", Li X, Chen J, Zhao G & Pietikäinen M, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2014 (`pdf <http://www.cv-foundation.org/openaccess/content_cvpr_2014/papers/Li_Remote_Heart_Rate_2014_CVPR_paper.pdf>`_) 
   - "Robust Pulse Rate From Chrominance-Based rPPG", de Haan & Jeanne, IEEE Transactions on Biomedical Engineering, 60, 10, 2013
-  - "A Novel Algorithm for Remote Photoplesthymograpy: Spatial Subspace Rotation", IEEE Transactions on Biomedical Engineering, 2015 
+  - "A Novel Algorithm for Remote Photoplesthymograpy: Spatial Subspace Rotation", IEEE Transactions on Biomedical Engineering, 2015.
+
+Note that we are not providing the raw data files of the databases used by this package, but you can download them here:
+  
+  * Manhob HCI-Tagging (http://mahnob-db.eu/hci-tagging/) 
+  * COHFACE (http://www.idiap.ch/dataset/cohface).
+
 
 Installation
 ------------
@@ -27,31 +31,29 @@ This package heavily depends on bob_, so if you use this package and/or its resu
         publisher = {ACM Press},
     }
 
-To install the package, git-clone it or download the zip archive, open a terminal and run:
-
-  .. code:: bash 
-     
-     $ cd bob.rppg.base
-     $ python bootstrap-buildout.py
-     $ ./bin/buildout
 
 
-For bob_ (and hence this package) to be able to work properly, some dependent packages are required to be installed.
-Please make sure that you have read the `Dependencies <https://github.com/idiap/bob/wiki/Dependencies>`_ for your operating system.
-In particular, this package requires OpenCV (version 2.4.10) to be installed. If you have a different version (i.e 
-version 3), the code might need some editing, see full documentation for details.
+    1. Install bob using conda as per instructions on the `bob website <https://www.idiap.ch/software/bob/install>`_
+    2. Activate your conda environment containing bob
+    3. Install the package by downloading the zip archive, opening a terminal and running::
+       
+       $ cd bob.rppg.base
+       $ python bootstrap-buildout.py
+       $ ./bin/buildout
+    
+    4. Download the metadata Manhob HCI Tagging database::
+       
+       $ ./bin/bob_dbmanage.py hci_tagging download --force
 
-Documentation and Further Information
--------------------------------------
+    5. Generate the documentation of the package, by running::
 
-You can generate the documentation locally:
+       $ ./bin/sphinx-build doc sphinx
+       
+       Point your browser to ``sphinx/index.html`` for further documentation and run instructions.
 
-  .. code:: bash 
-     
-     $ ./bin/sphinx-build doc sphinx
 
-The documentation, including a user's guide is available at ./sphinx/index.html.
-For information on other packages of bob_, on tutorials, asking questions, submitting issues and starting discussions, please visit its website.
+Reproducing article results
+---------------------------
 
-.. _bob: https://www.idiap.ch/software/bob
+Have a look at the scripts-article folder and the README within.
 
