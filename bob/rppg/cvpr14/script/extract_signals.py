@@ -8,7 +8,7 @@
 
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--bboxdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
+           [--dbdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
            [--wholeface]
            [--overwrite] [--verbose ...] [--plot] [--gridcount]
@@ -25,8 +25,6 @@ Options:
                             all the data sets will be loaded.
   -d, --dbdir=<path>        The path to the database on your disk. If not set,
                             defaults to Idiap standard locations.
-  -B, --bboxdir=<path>      The path to the faces bounding boxes (if any,
-                            run face detection otherwise).
   -f, --facedir=<path>      The path to the directory where signal extracted 
                             from the face area will be stored [default: face]
   -b, --bgdir=<path>        The path to the directory where signal extracted 
@@ -127,9 +125,6 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
-    if args['--bboxdir'] is None:
-      import pkg_resources
-      args['--bboxdir'] = pkg_resources.resource_filename('bob.db.cohface', 'data/bbox')
 
   elif args['hci']:
     import bob.db.hci_tagging
@@ -178,17 +173,8 @@ def main(user_input=None):
     video = obj.load_video(dbdir)
     logger.info("Processing input video from `%s'...", video.filename)
 
-    # load the result of face detection, if provided
-    # face detection will be run otherwise
-    if bool(args['--bboxdir']):
-      bbox_file = obj.make_path(args['--bboxdir'], '.face')
-      logger.debug("Loading bounding boxes")
-      try:
-        bounding_boxes = load_bbox(bbox_file)
-      except IOError as e:
-        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
-    else:
-      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
+    # load the result of face detection
+    bounding_boxes = obj.load_face_detection() 
 
     # average green color in the mask area  
     face_color = numpy.zeros(len(video), dtype='float64')
