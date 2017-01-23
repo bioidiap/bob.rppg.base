@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Guillaume Heusch <guillaume.heusch@idiap.ch>
-# Mon Apr  4 14:24:42 CET 2016
-#
-# Copyright (C) 2011-2016 Idiap Research Institute, Martigny, Switzerland
 
 import os
 import sys
@@ -11,36 +7,61 @@ import glob
 import pkg_resources
 
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
-
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.3'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-  'sphinx.ext.todo',
-  'sphinx.ext.coverage',
-  'sphinx.ext.ifconfig',
-  'sphinx.ext.autodoc',
-  'sphinx.ext.autosummary',
-  'sphinx.ext.doctest',
-  'sphinx.ext.intersphinx',
-  'matplotlib.sphinxext.plot_directive',
-  ]
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.doctest',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    #'matplotlib.sphinxext.plot_directive'
+    ]
 
-# The viewcode extension appeared only on Sphinx >= 1.0.0
 import sphinx
-if sphinx.__version__ >= "1.0":
-  extensions.append('sphinx.ext.viewcode')
+if sphinx.__version__ >= "1.4.1":
+    extensions.append('sphinx.ext.imgmath')
+    imgmath_image_format = 'svg'
+else:
+    extensions.append('sphinx.ext.pngmath')
+
+# Be picky about warnings
+nitpicky = True
+
+# Ignores stuff we can't easily resolve on other project's sphinx manuals
+nitpick_ignore = []
+
+# Allows the user to override warnings from a separate file
+if os.path.exists('nitpick-exceptions.txt'):
+    for line in open('nitpick-exceptions.txt'):
+        if line.strip() == "" or line.startswith("#"):
+            continue
+        dtype, target = line.split(None, 1)
+        target = target.strip()
+        try: # python 2.x
+            target = unicode(target)
+        except NameError:
+            pass
+        nitpick_ignore.append((dtype, target))
 
 # Always includes todos
 todo_include_todos = True
+
+# Generates auto-summary automatically
+autosummary_generate = True
+
+# Create numbers on figures with captions
+numfig = True
 
 # If we are on OSX, the 'dvipng' path maybe different
 dvipng_osx = '/opt/local/libexec/texlive/binaries/dvipng'
@@ -59,12 +80,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Li\'s remote heart rate measurement algorithm using Bob'
+project = u'bob.rppg.base'
 import time
 copyright = u'%s, Idiap Research Institute' % time.strftime('%Y')
 
 # Grab the setup entry
-distribution = pkg_resources.require('bob.rppg.base')[0]
+distribution = pkg_resources.require(project)[0]
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -109,15 +130,18 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-# Included after all input documents
-rst_epilog = ''
+# Some variables which are useful for generated material
+project_variable = project.replace('.', '_')
+short_description = u'Algorithms for Remote PPG'
+owner = [u'Idiap Research Institute']
 
 
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+import sphinx_rtd_theme
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -125,14 +149,14 @@ html_theme = 'default'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+#html_short_title = project_variable
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -146,7 +170,7 @@ html_favicon = 'img/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -190,63 +214,56 @@ html_favicon = 'img/favicon.ico'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'bob_rppg.base_doc'
+htmlhelp_basename = project_variable + u'_doc'
 
 
-# -- Options for LaTeX output --------------------------------------------------
+# -- Post configuration --------------------------------------------------------
 
-# The paper size ('letter' or 'a4').
-latex_paper_size = 'a4'
-
-# The font size ('10pt', '11pt' or '12pt').
-latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-  ('index', 'bob_rppg.base.tex', u'Documentation for Li\'s remote heart rate measurement algorithm',
-   u'Biometrics Group, Idiap Research Institute', 'manual'),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-#latex_logo = None
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-#latex_use_parts = False
-
-# If true, show page references after internal links.
-#latex_show_pagerefs = False
-
-# If true, show URL addresses after external links.
-#latex_show_urls = False
-
-# Documents to append as an appendix to all manuals.
-#latex_appendices = []
-
-# If false, no module index is generated.
-#latex_domain_indices = True
-
-
-# -- Options for manual page output --------------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'bob.rppg.base', u'Documentation for remote heart rate measurement algorithms', [u'Idiap Research Institute'], 1)
-]
+# Included after all input documents
+rst_epilog = """
+.. |project| replace:: Bob
+.. |version| replace:: %s
+.. |current-year| date:: %%Y
+""" % (version,)
 
 # Default processing flags for sphinx
-autoclass_content = 'both'
+autoclass_content = 'class'
 autodoc_member_order = 'bysource'
-autodoc_default_flags = ['members', 'undoc-members', 'inherited-members', 'show-inheritance']
+autodoc_default_flags = [
+  'members',
+  'undoc-members',
+  'inherited-members',
+  'show-inheritance',
+  ]
 
 # For inter-documentation mapping:
-from bob.extension.utils import link_documentation
-intersphinx_mapping = link_documentation(['bob.ip.facedetect'])
-intersphinx_mapping = link_documentation(['bob.ip.skincolorfilter'])
+from bob.extension.utils import link_documentation, load_requirements
+sphinx_requirements = "extra-intersphinx.txt"
+if os.path.exists(sphinx_requirements):
+  intersphinx_mapping = link_documentation(
+      additional_packages=['python','numpy'] + \
+          load_requirements(sphinx_requirements)
+          )
+else:
+  intersphinx_mapping = link_documentation()
 
+
+# We want to remove all private (i.e. _. or __.__) members
+# that are not in the list of accepted functions
+accepted_private_functions = ['__array__']
+
+def member_function_test(app, what, name, obj, skip, options):
+  # test if we have a private function
+  if len(name) > 1 and name[0] == '_':
+    # test if this private function should be allowed
+    if name not in accepted_private_functions:
+      # omit privat functions that are not in the list of accepted private functions
+      return skip
+    else:
+      # test if the method is documented
+      if not hasattr(obj, '__doc__') or not obj.__doc__:
+        return skip
+  return False
 
 def setup(app):
-  pass
+  app.connect('autodoc-skip-member', member_function_test)

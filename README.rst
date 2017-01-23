@@ -1,72 +1,46 @@
-.. Guillaume HEUSCH <guillaume.heusch@idiap.ch>
-.. Fri 15 Apr 15:09:35 CEST 2016
+.. vim: set fileencoding=utf-8 :
+.. Mon 23 Jan 14:37:08 CET 2017
 
-========================================
-Remote Heart Rate Measurement Algorithms
-========================================
+.. image:: http://img.shields.io/badge/docs-stable-yellow.svg
+   :target: http://pythonhosted.org/bob.rppg.base/index.html
+.. image:: http://img.shields.io/badge/docs-latest-orange.svg
+   :target: https://www.idiap.ch/software/bob/docs/latest/bob/bob.rppg.base/master/index.html
+.. image:: https://gitlab.idiap.ch/bob/bob.rppg.base/badges/master/build.svg
+   :target: https://gitlab.idiap.ch/bob/bob.rppg.base/commits/master
+.. image:: https://img.shields.io/badge/gitlab-project-0000c0.svg
+   :target: https://gitlab.idiap.ch/bob/bob.rppg.base
+.. image:: http://img.shields.io/pypi/v/bob.rppg.base.svg
+   :target: https://pypi.python.org/pypi/bob.rppg.base
+.. image:: http://img.shields.io/pypi/dm/bob.rppg.base.svg
+   :target: https://pypi.python.org/pypi/bob.rppg.base
 
-This package implements several algorithms for remote photoplesthymography (rPPG). The following algorithms are available:
 
-  - "Remote heart rate measurement from face videos under realistic situations", Li X, Chen J, Zhao G & Pietikäinen M, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2014 (`pdf <http://www.cv-foundation.org/openaccess/content_cvpr_2014/papers/Li_Remote_Heart_Rate_2014_CVPR_paper.pdf>`_) 
-  - "Robust Pulse Rate From Chrominance-Based rPPG", de Haan & Jeanne, IEEE Transactions on Biomedical Engineering, 60, 10, 2013
-  - "A Novel Algorithm for Remote Photoplesthymograpy: Spatial Subspace Rotation", IEEE Transactions on Biomedical Engineering, 2015.
+=========
+ Remote Heart Rate Measurement
+=========
 
-Note that we are not providing the raw data files of the databases used by this package, but you can download them here:
-  
-  * Manhob HCI-Tagging (http://mahnob-db.eu/hci-tagging/) 
-  * COHFACE (http://www.idiap.ch/dataset/cohface).
+This package is part of the signal-processing and machine learning toolbox
+Bob_. It provides a set of algorithm to infer the heart rate from face video sequences. 
 
 
 Installation
 ------------
 
-This package heavily depends on bob_, so if you use this package and/or its results, please cite the following publication::
+Follow our `installation`_ instructions. Then, using the Python interpreter
+provided by the distribution, bootstrap and buildout this package::
 
-    @inproceedings{Anjos_ACMMM_2012,
-        author = {A. Anjos AND L. El Shafey AND R. Wallace AND M. G\"unther AND C. McCool AND S. Marcel},
-        title = {Bob: a free signal processing and machine learning toolbox for researchers},
-        year = {2012},
-        month = oct,
-        booktitle = {20th ACM Conference on Multimedia Systems (ACMMM), Nara, Japan},
-        publisher = {ACM Press},
-    }
-
-Note that currently, bob and this package are supported for Linux distributions only
-
-    1. Install bob using conda as per instructions on the `bob website <https://www.idiap.ch/software/bob/install>`_
-    2. Activate your conda environment containing bob
-    3. Install the package by downloading the zip archive, opening a terminal and running::
-       
-       $ cd bob.rppg.base
-       $ python bootstrap-buildout.py
-       $ ./bin/buildout
-    
-    4. Download the metadata for the Manhob HCI Tagging database::
-       
-       $ ./bin/bob_dbmanage.py hci_tagging download --force
-
-    5. Generate the documentation of the package, by running::
-
-       $ ./bin/sphinx-build doc sphinx
-       
-       Point your browser to ``sphinx/index.html`` for further documentation and run instructions.
+  $ python bootstrap-buildout.py
+  $ ./bin/buildout
 
 
-Reproducing article results
----------------------------
+Contact
+-------
 
-After having downloaded the database(s), you will be able to reproduce complete experiments
-presented in the accompanying paper. To do so, you will first have to provide a database 
-directory in the root folder of the package. 
+For questions or reporting issues to this software package, contact our
+development `mailing list`_.
 
-We advise you to first use the COHFACE database since it is smaller and that the bounding boxes are provided.
-Now create a symlink to the database directory containing the raw data::
 
-    $ ln -s /path/to/the/cohface/database cohface
-
-For instance, to reproduce results of the CHROM algorithm reported in Table 5::
-
-    $ ./bin/python scripts-article/chrom-cohface-clean.py
-
-Have a look at the scripts-article folder and the README within for more examples.
-
+.. Place your references here:
+.. _bob: https://www.idiap.ch/software/bob
+.. _installation: https://www.idiap.ch/software/bob/install
+.. _mailing list: https://www.idiap.ch/software/bob/discuss
