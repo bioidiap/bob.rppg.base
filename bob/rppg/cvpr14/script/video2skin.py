@@ -8,7 +8,7 @@
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot]
-           [--dbdir=<path>] [--bboxdir=<path>] [--outdir=<path>] [--limit=<int>]
+           [--dbdir=<path>] [--outdir=<path>] [--limit=<int>]
            [--overwrite] [--threshold=<float>] [--skininit]
            [--gridcount] 
 
@@ -27,8 +27,6 @@ Options:
                             all the data sets will be loaded.
   -D, --dbdir=<path>        The path to the database on your disk. If not set,
                             defaults to Idiap standard locations.
-  -b, --bboxdir=<path>      The path to the directory where the face bounding
-                            boxes are stored [default: bboxes].
   -o, --outdir=<path>       Where the skin color will be stored [default: skin].
   -l, --limit=<int>         Limits the processing to the first N videos of the
                             database (for testing purposes)
@@ -78,7 +76,6 @@ import numpy
 import bob.io.base
 import bob.ip.skincolorfilter
 
-from ...base.utils import load_bbox
 from ...base.utils import crop_face
 from ..extract_utils import compute_average_colors_mask
 
@@ -122,9 +119,6 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
-    if args['--bboxdir'] is None:
-      import pkg_resources
-      args['--bboxdir'] = pkg_resources.resource_filename('bob.db.cohface', 'data/bbox')
 
   elif args['hci']:
     import bob.db.hci_tagging
@@ -160,10 +154,6 @@ def main(user_input=None):
   else: #maybe the user wants to limit the total amount of videos for testing
     if args['--limit']: objects = objects[:int(args['--limit'])]
 
-  if not bool(args['--bboxdir']):
-    logger.warn("You should provide a bounding box directory directory")
-    sys.exit()
-
   # does the actual work - for every video in the available dataset,
   # extract the average color in both the mask area and in the backround,
   # and then correct face illumination by removing the global illumination
@@ -183,14 +173,8 @@ def main(user_input=None):
     logger.info("Processing input video from `%s'...", video.filename)
     logger.debug("Sequence length = {0}".format(video.number_of_frames))
 
-    # load the result of face detection, or skip video verbosely
-    bbox_file = obj.make_path(args['--bboxdir'], '.face')
-    try:
-      bounding_boxes = load_bbox(bbox_file)
-    except IOError as e:
-      logger.warn("Skipping file `%s' (no bounding box file available)",
-          obj.path)
-      continue
+    # load the result of face detection
+    bounding_boxes = obj.load_face_detection() 
 
     # average colors of the skin color 
     skin_filter = bob.ip.skincolorfilter.SkinColorFilter()

@@ -8,7 +8,7 @@
 
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--bboxdir=<path>] [--outdir=<path>]
+           [--dbdir=<path>] [--outdir=<path>]
            [--start=<int>] [--end=<int>] [--motion=<float>]
            [--threshold=<float>] [--skininit]
            [--framerate=<int>] [--order=<int>]
@@ -27,8 +27,6 @@ Options:
                             all the data sets will be loaded.
   -d, --dbdir=<path>        The path to the database on your disk. If not set,
                             defaults to Idiap standard locations.
-  -B, --bboxdir=<path>      The path to the faces bounding boxes (if any,
-                            run face detection otherwise).
   -o, --outdir=<path>       The path to the directory where signal extracted 
                             from the face area will be stored [default: pulse]
   --start=<int>             Starting frame index [default: 0].
@@ -79,7 +77,6 @@ import bob.io.base
 import bob.ip.facedetect
 import bob.ip.skincolorfilter
 
-from ...base.utils import load_bbox
 from ...base.utils import crop_face
 from ...base.utils import build_bandpass_filter 
 
@@ -128,9 +125,6 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
-    if args['--bboxdir'] is None:
-      import pkg_resources
-      args['--bboxdir'] = pkg_resources.resource_filename('bob.db.cohface', 'data/bbox')
 
   elif args['hci']:
     import bob.db.hci_tagging
@@ -201,17 +195,8 @@ def main(user_input=None):
     if bool(args['--motion']):
       diff_motion = numpy.zeros((nb_frames-1, 1),  dtype='float64')
 
-    # load the result of face detection, if provided
-    # face detection will be run otherwise
-    if bool(args['--bboxdir']):
-      bbox_file = obj.make_path(args['--bboxdir'], '.face')
-      logger.debug("Loading bounding boxes")
-      try:
-        bounding_boxes = load_bbox(bbox_file)
-      except IOError as e:
-        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
-    else:
-      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
+    # load the result of face detection
+    bounding_boxes = obj.load_face_detection()
 
     # skin color filter
     skin_filter = bob.ip.skincolorfilter.SkinColorFilter()

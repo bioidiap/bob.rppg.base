@@ -10,33 +10,6 @@ import collections
 import bob.ip.base
 import bob.ip.facedetect
 
-def load_bbox(fname):
-  """load_bbox_new(fname) -> bounding_boxes
-  Load bounding boxes from file.
-
-  This function loads bounding boxes for each frame of a video sequence.
-
-  **Parameters**
-
-    ``fname`` : (string)
-      Filename of the file containing the bounding boxes.
-
-  **Returns**
-
-    ``bounding_boxes``: (dict of BoundingBox)
-      Dictionary of bob.ip.facedetect.BoundingBox, the key is the frame number
-  """
-
-  retval = {}
-  with open(fname, 'rt') as f:
-    for row in f:
-      if not row.strip(): continue 
-      p = row.split()
-      # top left (y, x), size (height, width)
-      retval[int(p[0])] = bob.ip.facedetect.BoundingBox((float(p[2]), float(p[1])), (float(p[4]), float(p[3])))
-  return retval
-  
-
 def scale_image(image, width, height):
   """scale_image(image, width, height) -> scaled_image
   

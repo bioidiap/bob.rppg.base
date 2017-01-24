@@ -1,1 +1,13 @@
+bob.extension
 bob.ip.facedetect
+bob.ip.draw
+bob.ip.color
+bob.ip.skincolorfilter
+bob.db.cohface
+bob.db.hci_tagging
+bob.io.video
+gridtk
+docopt
+numpy
+matplotlib
+scipy
