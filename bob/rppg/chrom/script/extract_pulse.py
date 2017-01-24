@@ -77,7 +77,6 @@ import bob.io.base
 import bob.ip.facedetect
 import bob.ip.skincolorfilter
 
-from ...base.utils import load_bbox
 from ...base.utils import crop_face
 from ...base.utils import build_bandpass_filter 
 

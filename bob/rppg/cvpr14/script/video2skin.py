@@ -76,7 +76,6 @@ import numpy
 import bob.io.base
 import bob.ip.skincolorfilter
 
-from ...base.utils import load_bbox
 from ...base.utils import crop_face
 from ..extract_utils import compute_average_colors_mask
 

@@ -74,7 +74,6 @@ import numpy
 import bob.io.video
 import bob.ip.color
 
-from ...base.utils import load_bbox
 from ...base.utils import crop_face
 from ..ssr_utils import get_skin_pixels
 from ..ssr_utils import get_eigen

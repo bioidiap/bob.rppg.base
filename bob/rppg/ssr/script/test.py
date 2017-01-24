@@ -32,26 +32,17 @@ def test_get_skin_pixels():
   from bob.rppg.ssr.ssr_utils import get_skin_pixels
   
   # zero threshold -> the number of skin pixels is the number of pixels in the cropped face
-  skin_pixels = get_skin_pixels(face, 0, 64, True, 0)
-  
-  # WARNING: this is buggy (bug in face cropping, alredy identified)
-  assert skin_pixels.shape[1] == 64*64
+  skin_pixels = get_skin_pixels(face, 0, True, 0.0)
+  bbox, quality = bob.ip.facedetect.detect_single_face(face)
+  assert skin_pixels.shape[1] == (bbox.size[0] - 1) * bbox.size[1] # -1 because of the cropping
 
-  # load bboxes
-  bbox_file = 'data/001.face'
-  parts = bbox_file.split('/')
-  parts.insert(0, os.path.dirname(mod.__file__))
-  bbox_name = os.path.join(*parts)
-  from bob.rppg.base.utils import load_bbox
-  bounding_boxes = load_bbox(bbox_name)
-  
   # same as before, but with provided bbox
-  skin_pixels = get_skin_pixels(face, 0, 64, True, 0, bounding_boxes)
-  # WARNING: this is buggy (bug in face cropping, already identified)
-  assert skin_pixels.shape[1] == 64*64
+  bounding_boxes = [bbox] 
+  skin_pixels = get_skin_pixels(face, 0, True, 0, bounding_boxes)
+  assert skin_pixels.shape[1] == (bbox.size[0] - 1) * bbox.size[1] # -1 because of the cropping
 
   # threshold of 1.0 -> zero skin pixels
-  skin_pixels = get_skin_pixels(face, 0, 64, True, 1, bounding_boxes)
+  skin_pixels = get_skin_pixels(face, 0, True, 1, bounding_boxes)
   assert skin_pixels.shape[1] == 0
 
 
