@@ -9,6 +9,8 @@ import pkg_resources
 
 # -- General configuration -----------------------------------------------------
 
+sys.path.insert(0, os.path.abspath(".."))
+
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.3'
 
