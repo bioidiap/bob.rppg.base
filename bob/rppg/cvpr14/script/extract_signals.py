@@ -113,9 +113,9 @@ def main(user_input=None):
     if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
       logger.debug("Using Idiap default location for the DB")
       dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
+    elif args['--dbdir'] is not None:
       logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
+      dbdir = args['--dbdir']
     else:
       logger.warn("Could not find the database directory, please provide one")
       sys.exit()
@@ -131,9 +131,9 @@ def main(user_input=None):
     if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
       logger.debug("Using Idiap default location for the DB")
       dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
+    elif args['--dbdir'] is not None:
       logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
+      dbdir = args['--dbdir'] 
     else:
       logger.warn("Could not find the database directory, please provide one")
       sys.exit()
