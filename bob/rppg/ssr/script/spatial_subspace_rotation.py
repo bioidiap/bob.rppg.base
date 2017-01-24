@@ -8,7 +8,7 @@
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot]
-           [--dbdir=<path>] [--bboxdir=<path>] [--outdir=<path>]
+           [--dbdir=<path>] [--outdir=<path>]
            [--threshold=<float>] [--skininit] 
            [--stride=<int>] [--start=<int>] [--end=<int>] 
            [--overwrite] [--gridcount]
@@ -28,8 +28,6 @@ Options:
                             all the data sets will be loaded.
   -D, --dbdir=<path>        The path to the database on your disk. If not set,
                             defaults to Idiap standard locations.
-  -b, --bboxdir=<path>      The path to the directory containing the extracted
-                            bounding boxes [default: bboxes]
   -o, --outdir=<path>       The path to the output directory where the resulting
                             pulse signal will be stored [default: pulse].
   --threshold=<float>       Threshold on the skin probability map [default: 0.5].
@@ -123,9 +121,6 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
-    if args['--bboxdir'] is None:
-      import pkg_resources
-      args['--bboxdir'] = pkg_resources.resource_filename('bob.db.cohface', 'data/bbox')
 
   elif args['hci']:
     import bob.db.hci_tagging
@@ -187,17 +182,8 @@ def main(user_input=None):
     nb_final_frames = end_index - start_index
     logger.debug("Processing %d frames...", nb_final_frames)
 
-    # load the result of face detection, if provided
-    # face detection will be run otherwise
-    if bool(args['--bboxdir']):
-      bbox_file = obj.make_path(args['--bboxdir'], '.face')
-      logger.debug("Loading bounding boxes")
-      try:
-        bounding_boxes = load_bbox(bbox_file)
-      except IOError as e:
-        logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
-    else:
-      logger.warn("Detecting faces in file `%s' (no bounding box file available)", obj.path)
+    # load the result of face detection
+    bounding_boxes = obj.load_face_detection()
 
     # the temporal stride
     temporal_stride = int(args['--stride'])
