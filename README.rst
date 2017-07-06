@@ -11,8 +11,6 @@
    :target: https://gitlab.idiap.ch/bob/bob.rppg.base
 .. image:: http://img.shields.io/pypi/v/bob.rppg.base.svg
    :target: https://pypi.python.org/pypi/bob.rppg.base
-.. image:: http://img.shields.io/pypi/dm/bob.rppg.base.svg
-   :target: https://pypi.python.org/pypi/bob.rppg.base
 
 
 =========
@@ -20,7 +18,7 @@
 =========
 
 This package is part of the signal-processing and machine learning toolbox
-Bob_. It provides a set of algorithm to infer the heart rate from face video sequences. 
+Bob_. It provides a set of algorithm to infer the heart rate from face video sequences.
 
 
 Installation
