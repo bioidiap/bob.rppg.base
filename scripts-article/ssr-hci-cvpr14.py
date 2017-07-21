@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# encoding: utf-8
+# Guillaume HEUSCH <guillaume.heusch@idiap.ch>
+# Fri 21 Jul 15:38:28 CEST 2017
+
 import os, sys
 
 # directories and file
