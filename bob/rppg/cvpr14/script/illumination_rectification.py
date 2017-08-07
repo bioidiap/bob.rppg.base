@@ -1,7 +1,22 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Guillaume HEUSCH <guillaume.heusch@idiap.ch>
-# Wed 28 Oct 12:33:20 CET 2015
+
+# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
+# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
+# 
+# This file is part of bob.rpgg.base.
+# 
+# bob.rppg.base is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation.
+# 
+# bob.rppg.base is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
 
 
 '''Illumination rectification for database videos (%(version)s)
