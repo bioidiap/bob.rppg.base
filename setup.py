@@ -15,7 +15,7 @@ setup(
   name='bob.rppg.base',
   version=version,
   description="Algorithms for Remote PPG",
-  url='https://gitlab.idiap.ch/biometric/bob.rppg.base',
+  url='https://gitlab.idiap.ch/bob/bob.rppg.base',
   license='GPLv3',
   author='Guillaume Heusch',
   author_email='guillaume.heusch@idiap.ch',
