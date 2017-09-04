@@ -13,9 +13,9 @@
    :target: https://pypi.python.org/pypi/bob.rppg.base
 
 
-=========
+===============================
  Remote Heart Rate Measurement
-=========
+===============================
 
 This package is part of the signal-processing and machine learning toolbox
 Bob_. It provides a set of algorithm to infer the heart rate from face video sequences.
