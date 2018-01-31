@@ -138,5 +138,5 @@ def project_chrominance(r, g, b):
       The y value
   """
   x = (3.0 * r) - (2.0 * g)
-  y = (1.5 * r) + g + (1.5 * b)
+  y = (1.5 * r) + g - (1.5 * b)
   return x, y
