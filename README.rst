@@ -24,11 +24,16 @@ Bob_. It provides a set of algorithm to infer the heart rate from face video seq
 Installation
 ------------
 
-Follow our `installation`_ instructions. Then, using the Python interpreter
-provided by the distribution, bootstrap and buildout this package::
+Follow our `installation`_ instructions. Then, if you would like to use
+this package, just do::
 
-  $ python bootstrap-buildout.py
-  $ ./bin/buildout
+  $ conda install bob.rppg.base 
+
+Or if you would like to develop the package::
+
+  $ git clone git@gitlab.idiap.ch:bob/bob.rppg.base.git
+  $ cd bob.rppg.base 
+  $ buildout
 
 
 Contact
