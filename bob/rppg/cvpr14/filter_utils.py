@@ -1,45 +1,26 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
 import numpy
 
 def detrend(signal, Lambda):
-  """detrend(signal, Lambda) -> filtered_signal
-  
-  This function applies a detrending filter.
+  """applies a detrending filter.
    
   This code is based on the following article "An advanced detrending method with application
   to HRV analysis". Tarvainen et al., IEEE Trans on Biomedical Engineering, 2002.
   
-  **Parameters**
+  Parameters
+  ----------
+  signal: 1d numpy array
+    The signal where you want to remove the trend.
+  Lambda: int
+    The smoothing parameter.
 
-    ``signal`` (1d numpy array):
-      The signal where you want to remove the trend.
-
-    ``Lambda`` (int):
-      The smoothing parameter.
-
-  **Returns**
+  Returns
+  ------- 
+  filtered_signal: 1d numpy array
+    The detrended signal.
   
-    ``filtered_signal`` (1d numpy array):
-      The detrended signal.
   """
   signal_length = signal.shape[0]
 
@@ -57,22 +38,20 @@ def detrend(signal, Lambda):
   return filtered_signal
 
 def average(signal, window_size):
-  """average(signal, window_size) -> filtered_signal
+  """Moving average filter.
+
+  Parameters
+  ----------
+  signal: 1d numpy array
+    The signal to filter.
+  window_size: int
+    The size of the window to compute the average.
+
+  Returns
+  ------- 
+  filtered_signal: 1d numpy array
+    The averaged signal.
   
-  Moving average filter.
-
-  **Parameters**
-
-    ``signal`` (1d numpy array):
-      The signal to filter.
-
-    ``window_size`` (int):
-      The size of the window to compute the average.
-
-  **Returns**
-  
-    ``filtered_signal`` (1d numpy array):
-      The averaged signal.
   """
   from scipy.signal import lfilter
   a = 1.0 
