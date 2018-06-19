@@ -1,50 +1,30 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
 import numpy
 
 def build_segments(signal, length):
-  """build_segments(signal, length) -> segments
-  
-  Builds an array containing segments of the signal.
+  """builds an array containing segments of the signal.
 
   The signal is divided into segments of provided length
   (no overlap) and the different segments are stacked.
 
-  **Parameters**
+  Parameters
+  ----------
+  signal: 1d numpy array
+    The signal to be processed.
+  length: int
+    The length of the segments.
 
-    ``signal`` (1d numpy array):
-      The signal to be processed.
-
-    ``length`` (int):
-      The length of the segments.
-
-  **Returns**
-
-    ``segments`` (2d numpy array (n_segments, length)):
-      the segments composing the signal.
-
-    ``end_index`` (int):
-      The length of the signal (there may be a trail smaller
-      than a segment at the end of the signal, that will
-      be discarded).
+  Returns
+  -------
+  segments: 2d numpy array (n_segments, length)
+    the segments composing the signal.
+  end_index: int
+    The length of the signal (there may be a trail smaller
+    than a segment at the end of the signal, that will
+    be discarded).
+ 
   """
   number_of_segments = int(numpy.floor(signal.shape[0] /  float(length)))
   end_index = number_of_segments * length 
@@ -52,33 +32,29 @@ def build_segments(signal, length):
   return segments, end_index
 
 def prune_segments(segments, threshold):
-  """prune_segments(segments, threshold) -> pruned_segments
-  
-  Remove segments.
+  """remove segments.
 
   Segments are removed if their standard deviation is higher than
   the provided threshold.
 
-  **Parameters**
+  Parameters
+  ----------
+  segments: 2d numpy array
+    The set of segments.
+  threshold: float
+    Threshold on the standard deviation.
 
-    ``segments`` (2d numpy array):
-      The set of segments.
-
-    ``threshold`` (float):
-      Threshold on the standard deviation.
-
-  **Returns**
-    
-    ``pruned_segments`` (2d numpy array):
-      The set of "stable" segments.
-
-    ``gaps`` (list of dim (# of retained segments)):
-      Boolean list that tells if a gap should be accounted for
-      when building the final signal.
-
-    ``cut_index`` (list of tuples):
-      Contains the start and end index of each removed segment.
-      Used for plotting purposes.
+  Returns
+  -------
+  pruned_segments: 2d numpy array
+    The set of "stable" segments.
+  gaps: list of length (# of retained segments)
+    Boolean list that tells if a gap should be accounted for
+    when building the final signal.
+  cut_index: list of tuples
+    Contains the start and end index of each removed segment.
+    Used for plotting purposes.
+  
   """
   final_segments = []
   gaps = [] # the first kept segment could not have a gap
@@ -101,23 +77,21 @@ def prune_segments(segments, threshold):
   return numpy.array(final_segments), gaps, cut_index
 
 def build_final_signal(segments, gaps):
-  """build_final_signal(segments, gaps) -> final_signal
+  """builds the final signal with remaining segments.
+
+  Parameters
+  ----------
+  segments: 2d numpy array
+    The set of remaining segments.
+  gaps: list
+    Boolean list that tells if a gap should be accounted for
+    when building the final signal.
   
-  Builds the final signal with remaining segments.
-
-  **Parameters**
-
-    ``segments`` (2d numpy array):
-      The set of remaining segments.
-
-    ``gaps`` (list):
-      Boolean list that tells if a gap should be accounted for
-      when building the final signal.
+  Returns
+  -------
+  final_signal: 1d numpy array
+    The final signal.
   
-  **Returns**
-    
-    ``final_signal`` (1d numpy array):
-      The final signal.
   """
   signal_length = segments.shape[0] * segments.shape[1]
   final_signal = numpy.zeros(signal_length)
@@ -135,7 +109,7 @@ def build_final_signal(segments, gaps):
   return final_signal
 
 def build_final_signal_cvpr14(segments, gaps):
-  """def build_final_signal_original(segments, gaps) -> final_signal
+  """builds the final signal with remaining segments.
  
   .. WARNING::
      This contains a bug !
@@ -145,19 +119,19 @@ def build_final_signal_cvpr14(segments, gaps):
   The bug is in the 'collage' of remaining segments. The
   gap is not always properly accounted for... 
 
-  **Parameters**
-
-    ``segments`` (2d numpy array):
-      The set of remaining segments.
-
-    ``gaps`` (list):
-      Boolean list that tells if a gap should be accounted for
-      when building the final signal.
+  Parameters
+  ----------
+  segments: 2d numpy array
+    The set of remaining segments.
+  gaps: list
+    Boolean list that tells if a gap should be accounted for
+    when building the final signal.
   
-  **Returns**
-    
-    ``final_signal`` (1d numpy array):
-      The final signal.
+  Returns
+  -------
+  final_signal: 1d numpy array
+    The final signal.
+  
   """
   signal_length = segments.shape[0] * segments.shape[1]
   final_signal = numpy.zeros(signal_length)
