@@ -1,25 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
-
-'''Filtering of color signal (%(version)s)
+"""Filtering of color signal (%(version)s)
 
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]  
@@ -72,16 +54,15 @@ Reference:
 Part of this code is based on the following article 
 "An advanced detrending method with application to HRV analysis". 
 Tarvainen et al., IEEE Trans on Biomedical Engineering, 2002.
-'''
+
+"""
 
 import os
 import sys
 import pkg_resources
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger("filter_log")
+import bob.core
+logger = bob.core.log.setup("bob.rppg.base")
 
 from docopt import docopt
 
@@ -103,19 +84,12 @@ def main(user_input=None):
       arguments = sys.argv[1:]
 
   prog = os.path.basename(sys.argv[0])
-  completions = dict(
-          prog=prog,
-          version=version,
-          )
-  args = docopt(
-      __doc__ % completions,
-      argv=arguments,
-      version='Filtering for signals (%s)' % version,
-      )
+  completions = dict(prog=prog, version=version,)
+  args = docopt(__doc__ % completions, argv=arguments, version='Filtering for signals (%s)' % version,)
 
   # if the user wants more verbosity, lowers the logging level
-  if args['--verbose'] == 1: logging.getLogger("filter_log").setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger("filter_log").setLevel(logging.DEBUG)
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, args['--verbose'])
  
   # chooses the database driver to use
   if args['cohface']:
@@ -153,18 +127,22 @@ def main(user_input=None):
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
 
-  # tells the number of grid objects, and exit
-  if args['--gridcount']:
-    print len(objects)
-    sys.exit()
-
   # if we are on a grid environment, just find what I have to process.
-  if os.environ.has_key('SGE_TASK_ID'):
+  sge = False
+  try:
+    sge = os.environ.has_key('SGE_TASK_ID') # python2
+  except AttributeError:
+    sge = 'SGE_TASK_ID' in os.environ # python3
+    
+  if sge:
     pos = int(os.environ['SGE_TASK_ID']) - 1
     if pos >= len(objects):
-      raise RuntimeError, "Grid request for job %d on a setup with %d jobs" % \
-          (pos, len(objects))
+      raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
+
+  if args['--gridcount']:
+    print(len(objects))
+    sys.exit()
 
   # build the bandpass filter one and for all
   b = build_bandpass_filter(float(args['--framerate']), int(args['--order']), bool(args['--plot']))
