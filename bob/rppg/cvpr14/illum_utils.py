@@ -1,51 +1,30 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
 import numpy
 
 def rectify_illumination(face_color, bg_color, step, length):
-  """rectify_illumination(face_color, bg_color, step, length) -> rectified color
-  
-  This function performs the illumination rectification.
+  """performs illumination rectification.
   
   The correction is made on the face green values using the background green values, 
   so as to remove global illumination variations in the face green color signal.
 
-  **Parameters**
+  Parameters
+  ----------
+  face_color: 1d numpy array
+    The mean green value of the face across the video sequence. 
+  bg_color: 1d numpy array
+    The mean green value of the background across the video sequence. 
+  step: float
+    Step size in the filter's weight adaptation.
+  length: int
+    Length of the filter.
 
-    ``face_color`` (1d numpy array):
-      The mean green value of the face across the video sequence. 
-
-    ``bg_color`` (1d numpy array):
-      The mean green value of the background across the video sequence. 
-
-    ``step`` (float):
-      Step size in the filter's weight adaptation.
-
-    ``length`` (int):
-      Length of the filter.
-
-  **Returns**
-    
-    ``rectified color`` (1d numpy array):
-      The mean green values of the face, corrected for illumination variations.
+  Returns
+  -------
+  rectified color: 1d numpy array
+    The mean green values of the face, corrected for illumination variations.
+  
   """
   # first pass to find the filter coefficients
   # - y: filtered signal
@@ -59,44 +38,35 @@ def rectify_illumination(face_color, bg_color, step, length):
   return eg2
 
 def nlms(signal, desired_signal, n_filter_taps, step, initCoeffs=None, adapt=True):
-  """nlms(signal, desired_signal, n_filter_taps, step[, initCoeffs][, adapt]) -> y, e, w
-  
-  Normalized least mean square filter.
+  """Normalized least mean square filter.
   
   Based on adaptfilt 0.2:  https://pypi.python.org/pypi/adaptfilt/0.2
   
-  **Parameters**
-  
-    ``signal`` (1d numpy array):
-      The signal to be filtered.
-  
-    ``desired_signal`` (1d numpy array):
-      The target signal.
+  Parameters
+  ----------
+  signal: 1d numpy array
+    The signal to be filtered.
+  desired_signal: 1d numpy array
+    The target signal.
+  n_filter_taps: int
+    The number of filter taps (related to the filter order).
+  step: float
+    Adaptation step for the filter weights.
+  initCoeffs: numpy array (1, n_filter_taps)
+    Initial values for the weights. Defaults to zero.
+  adapt: bool
+    If True, adapt the filter weights. If False, only filters.
 
-    ``n_filter_taps`` (int):
-      The number of filter taps (related to the filter order).
-  
-    ``step`` (float):
-      Adaptation step for the filter weights.
-  
-
-    ``initCoeffs`` ([Optional] numpy array (1, n_filter_taps)):
-      Initial values for the weights. Defaults to zero.
-
-    ``adapt`` ([Optional] boolean):
-      If True, adapt the filter weights. If False, only filters.
-      Defaults to True.
-
-  **Returns**
-
-    ``y`` (1d numpy array):
-      The filtered signal.
+  Returns
+  -------
+  y: 1d numpy array
+    The filtered signal.
     
-    ``e`` (1d numpy array):
-      The error signal (difference between filtered and desired)
+  e: 1d numpy array
+    The error signal (difference between filtered and desired)
 
-    ``w`` (numpy array (1, n_filter_taps)):
-      The found weights of the filter.
+  w: numpy array (1, n_filter_taps)
+    The found weights of the filter.
       
   """
   eps = 0.001
