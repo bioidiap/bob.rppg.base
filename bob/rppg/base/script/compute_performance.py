@@ -1,24 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
-'''Generate resutls from heart rate computation (%(version)s)
+"""Generate resutls from heart rate computation (%(version)s)
   
 Usage:
   %(prog)s (hci | cohface) [--protocol=<string>] [--subset=<string> ...] 
@@ -38,7 +21,7 @@ Options:
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -i, --indir=<path>        The path to the saved heart rate values on your disk. 
-  -d, --outdir=<path>       The path to the output directory where the results
+  -o, --outdir=<path>       The path to the output directory where the results
                             will be stored [default: performances].
   -O, --overwrite           By default, we don't overwrite existing files. 
                             Set this flag if you want to overwrite existing files.
@@ -56,16 +39,14 @@ Examples:
 
 See '%(prog)s --help' for more information.
 
-'''
+"""
 
 import os
 import sys
 import pkg_resources
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger("perf_log")
+from bob.core.log import setup
+logger = setup("bob.rppg.base")
 
 from docopt import docopt
 
@@ -83,19 +64,12 @@ def main(user_input=None):
       arguments = sys.argv[1:]
 
   prog = os.path.basename(sys.argv[0])
-  completions = dict(
-          prog=prog,
-          version=version,
-          )
-  args = docopt(
-      __doc__ % completions,
-      argv=arguments,
-      version='Results for videos (%s)' % version,
-      )
+  completions = dict(prog=prog, version=version,)
+  args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
   # if the user wants more verbosity, lowers the logging level
-  if args['--verbose'] == 1: logging.getLogger("perf_log").setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger("perf_log").setLevel(logging.DEBUG)
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, args['--verbose'])
 
   # chooses the database driver to use
   if args['cohface']:
@@ -224,7 +198,7 @@ def main(user_input=None):
 
   # distribution of HR
   f3 = pyplot.figure()
-  ax3 = f2.add_subplot(1,1,1)
+  ax3 = f3.add_subplot(1,1,1)
   histoargs = {'bins': 50, 'alpha': 0.5, 'histtype': 'bar', 'range': (30, 120)} 
   pyplot.hist(ground_truth, label='Real HR', color='g', **histoargs)
   pyplot.hist(inferred, label='Estimated HR', color='b', **histoargs)

@@ -1,24 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
-'''Frequency analysis of the filtered color signals to get the heart-rate (%(version)s)
+"""Frequency analysis of the filtered color signals to get the heart-rate (%(version)s)
 
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]  
@@ -64,16 +47,14 @@ Examples:
 
 See '%(prog)s --help' for more information.
 
-'''
+"""
 
 import os
 import sys
 import pkg_resources
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger("hr_log")
+from bob.core.log import setup
+logger = setup("bob.rppg.base")
 
 from docopt import docopt
 
@@ -91,19 +72,12 @@ def main(user_input=None):
       arguments = sys.argv[1:]
 
   prog = os.path.basename(sys.argv[0])
-  completions = dict(
-          prog=prog,
-          version=version,
-          )
-  args = docopt(
-      __doc__ % completions,
-      argv=arguments,
-      version='Frequency analysis for videos (%s)' % version,
-      )
+  completions = dict(prog=prog, version=version,)
+  args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
   # if the user wants more verbosity, lowers the logging level
-  if args['--verbose'] == 1: logging.getLogger("hr_log").setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger("hr_log").setLevel(logging.DEBUG)
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, args['--verbose'])
 
   # chooses the database driver to use
   if args['cohface']:
