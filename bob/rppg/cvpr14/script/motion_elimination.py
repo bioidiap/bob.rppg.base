@@ -1,30 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
-'''Non Rigid Motion Elimination for color signals (%(version)s)
+"""Non Rigid Motion Elimination for color signals (%(version)s)
 
 Usage:
   %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot] [--indir=<path>] [--outdir=<path>]
            [--seglength=<int>] [--save-threshold=<path>] [--load-threshold=<path>]
-           [--cutoff=<float>] [--cvpr14] [--overwrite] [--gridcount] 
+           [--cutoff=<float>] [--cvpr14] [--overwrite]
 
   %(prog)s (--help | -h)
   %(prog)s (--version | -V)
@@ -52,7 +35,6 @@ Options:
   -O, --overwrite               By default, we don't overwrite existing files. The
                                 processing will skip those so as to go faster. If you
                                 still would like me to overwrite them, set this flag.
-  --gridcount                   Tells the number of objects and exits.
   --cvpr14                      Original algorithm, as provided by the authors
                                 of the paper (contains a bug, provided for
                                 reproducibilty purposes). This has to be set
@@ -76,16 +58,14 @@ Examples:
 
 See '%(prog)s --help' for more information.
 
-'''
+"""
 
 import os
 import sys
 import pkg_resources
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger("motion_log")
+import bob.core
+logger = bob.core.log.setup("bob.rppg.base")
 
 from docopt import docopt
 
@@ -108,19 +88,12 @@ def main(user_input=None):
       arguments = sys.argv[1:]
 
   prog = os.path.basename(sys.argv[0])
-  completions = dict(
-          prog=prog,
-          version=version,
-          )
-  args = docopt(
-      __doc__ % completions,
-      argv=arguments,
-      version='Non-rigid motion elimination for videos (%s)' % version,
-      )
+  completions = dict(prog=prog, version=version,)
+  args = docopt(__doc__ % completions, argv=arguments, version='Non-rigid motion elimination for videos (%s)' % version,)
 
   # if the user wants more verbosity, lowers the logging level
-  if args['--verbose'] == 1: logging.getLogger("motion_log").setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger("motion_log").setLevel(logging.DEBUG)
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, args['--verbose'])
 
   # chooses the database driver to use
   if args['cohface']:
@@ -157,19 +130,6 @@ def main(user_input=None):
       logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
       sys.exit()
     objects = db.objects(args['--protocol'], args['--subset'])
-
-  # tells the number of grid objects, and exit
-  if args['--gridcount']:
-    print len(objects)
-    sys.exit()
-
-  # if we are on a grid environment, just find what I have to process.
-  if os.environ.has_key('SGE_TASK_ID'):
-    pos = int(os.environ['SGE_TASK_ID']) - 1
-    if pos >= len(objects):
-      raise RuntimeError, "Grid request for job %d on a setup with %d jobs" % \
-          (pos, len(objects))
-    objects = [objects[pos]]
 
   # determine the threshold for the standard deviation to be applied to the segments
   # this part is not executed if a threshold is provided
