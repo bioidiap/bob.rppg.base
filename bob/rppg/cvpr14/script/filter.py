@@ -56,6 +56,7 @@ Part of this code is based on the following article
 Tarvainen et al., IEEE Trans on Biomedical Engineering, 2002.
 
 """
+from __future__ import print_function
 
 import os
 import sys
