@@ -13,7 +13,7 @@ def get_skin_pixels(face_frame, index, skininit, threshold, bounding_boxes=None,
     
   Parameters
   ----------
-  face_frame: numpy ndarray
+  face_frame: numpy.ndarray
     The frame where the face has to be detected.
 
   index: int
@@ -25,7 +25,7 @@ def get_skin_pixels(face_frame, index, skininit, threshold, bounding_boxes=None,
   threshold: float 
       The threshold on the skin color probability (between [0, 1]).
 
-  bounding_boxes: list of :py:class: bob.ip.facedetect.BoundingBox
+  bounding_boxes: list of :py:class:`bob.ip.facedetect.BoundingBox`
     The face bounding boxes corresponding to the sequence.
 
   skin_frame: numpy.ndarray
@@ -72,7 +72,7 @@ def get_eigen(skin_pixels):
 
   Parameters
   ----------
-  skin_pixels: numpynd.array
+  skin_pixels: numpy.ndarray
     The RGB values of skin-colored pixels.
         
   Returns
@@ -100,7 +100,7 @@ def plot_eigenvectors(skin_pixels, eigenvectors):
 
   Parameters
   ----------
-  skin_pixels: numpynd.array
+  skin_pixels: numpy.ndarray
     The RGB values of skin-colored pixels.
   eigenvectors: numpy.ndarray
     The eigenvectors of the correlation matrix
