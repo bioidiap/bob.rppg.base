@@ -12,9 +12,9 @@ def compute_mean_rgb(image, mask=None):
   
   Parameters
   ----------
-  image: 3d numpy array
+  image: numpy.ndarray 
     The image to process
-  mask: 2d boolen numpy array
+  mask: numpy.ndarray
     Mask of the size of the image, telling which pixels
     should be considered
 
@@ -40,9 +40,9 @@ def compute_gray_diff(previous, current):
   
   Parameters
   ----------
-  previous: 3d numpy array
+  previous: numpy.ndarray  
     The previous frame.
-  current: 3d numpy array
+  current: numpy.ndarray 
     The current frame.
  
   Returns
@@ -65,7 +65,7 @@ def select_stable_frames(diff, n):
 
   Parameters
   ----------
-  diff: 1d numpy array
+  diff: numpy.ndarray 
     The sum of absolute pixel intensity differences between 
     consecutive frames, across the whole sequence.
   n: int
