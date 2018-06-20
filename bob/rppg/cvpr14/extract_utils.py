@@ -41,10 +41,10 @@ def kp66_to_mask(image, keypoints, indent=10, plot=False):
 
   Returns
   -------
-  mask: 2d numpy boolean array
+  mask: numpy.ndarray 
     A boolean array of the size of the original image, where the region
     corresponding to the mask is True.
-  mask_points: list of tuples, 9x2
+  mask_points: :obj:`list` of :obj:`tuple` 
     The points corresponding to vertices of the mask.
   
   """
@@ -110,12 +110,12 @@ def get_mask(image, mask_points):
   ----------
   image: numpy.ndarray
     The current frame.
-  mask_points: list of tuples, 9x2
+  mask_points: :obj:`list` of :obj:`tuple`
     The points corresponding to vertices of the mask.
   
   Returns
   -------
-  mask: 2d numpy boolean array
+  mask: numpy.ndarray 
     A boolean array of the size of the original image, where the region
     corresponding to the mask is True.
   
@@ -147,7 +147,7 @@ def  get_good_features_to_track(face, npoints, quality=0.01, min_distance=10, pl
     The cropped face image
   npoints: int
     The maximum number of strong corners you want to detect
-  quality: float
+  quality: :obj:`float`
     The minimum relative quality of the detected corners.
     Note that increasing this value decreases the number of
     detected corners. Defaluts to 0.01.
@@ -272,7 +272,7 @@ def compute_average_colors_mask(image, mask, plot=False):
   ----------
   image: numpy.ndarray 
     The image containing the face.
-  mask: 2d numpy boolean array
+  mask: numpy.ndarray 
     A boolean array of the size of the original image, where the region
     corresponding to the mask is True.
   plot: bool
@@ -280,7 +280,7 @@ def compute_average_colors_mask(image, mask, plot=False):
     
   Returns
   -------
-  color: float
+  color: :obj:`float`
     The average green color inside the mask ROI.
   
   """
@@ -307,7 +307,7 @@ def compute_average_colors_wholeface(image, plot=False):
   
   Returns
   -------
-  color: float
+  color: :obj:`float`
     The average green color inside the face 
   
   """
