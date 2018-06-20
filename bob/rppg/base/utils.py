@@ -13,7 +13,7 @@ def scale_image(image, width, height):
 
   Parameters
   ----------
-  image: 3d numpy array
+  image: numpy.ndarray
     The image to be scaled.
   width: int
     The new image width.
@@ -22,7 +22,7 @@ def scale_image(image, width, height):
 
   Returns
   -------
-  result: 3d numpy array
+  result: numpy.ndarray
     The scaled image
   
   """
@@ -37,7 +37,7 @@ def crop_face(image, bbx, facewidth):
   
   Parameters
   ----------
-  image: 3d numpy array
+  image: numpy.ndarray
     The image to be scaled.
   bbx: :py:class:`bob.ip.facedetect.BoundingBox`
     The bounding box of the face.
@@ -46,7 +46,7 @@ def crop_face(image, bbx, facewidth):
 
   Returns
   -------
-  face: numpy array
+  face: numpy.ndarray
     The face image.
   """
   face = image[:, bbx.topleft[0]:(bbx.topleft[0] + bbx.size[0]), bbx.topleft[1]:(bbx.topleft[1] + bbx.size[1])]
@@ -71,7 +71,7 @@ def build_bandpass_filter(fs, order, plot=False):
   
   Returns
   -------
-  b: numpy array
+  b: numpy.ndarray
     The coefficients of the FIR filter.
   
   """
@@ -91,11 +91,9 @@ def build_bandpass_filter(fs, order, plot=False):
     w, h = freqz(b)
     fig = pyplot.figure()
     pyplot.title('Bandpass filter frequency response')
-    ax1 = fig.add_subplot(111)
     pyplot.plot(w * fs / (2 * numpy.pi), 20 * numpy.log10(abs(h)), 'b')
-    [ymin, ymax] = ax1.get_ylim()
-    pyplot.vlines(min_freq, ymin, ymax, color='red', linewidths='2')
-    pyplot.vlines(max_freq, ymin, ymax, color='red', linewidths='2')
+    pyplot.axvline(x=min_freq, color="red")
+    pyplot.axvline(x=max_freq, color="red")
     pyplot.ylabel('Amplitude [dB]', color='b')
     pyplot.xlabel('Frequency [Hz]')
     pyplot.show()
