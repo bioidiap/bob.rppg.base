@@ -15,5 +15,4 @@ gridtk
 numpy
 scipy
 docopt
-opencv
 matplotlib
