@@ -47,7 +47,7 @@ def compute_gray_diff(previous, current):
  
   Returns
   -------
-  diff: float
+  float: 
     The sum of the absolute difference in pixel intensity between two frames
   
   """
