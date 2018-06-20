@@ -32,31 +32,27 @@ requirements:
   host:
     - python {{ python }}
     - setuptools {{ setuptools }}
-    - numpy >=1.11 
-    - scipy
-    - docopt
-    - opencv 
     - bob.extension
     - bob.core
     - bob.io.base
     - bob.io.image
     - bob.io.video
     - bob.ip.base
+    - bob.ip.draw
     - bob.ip.color
     - bob.ip.facedetect
     - bob.ip.skincolorfilter
     - bob.db.cohface
     - bob.db.hci_tagging
+    - gridtk
   run:
     - python
     - setuptools
-    - numpy >=1.11 
+    - numpy
     - scipy
     - docopt
     - opencv
     - matplotlib
-    - bob.ip.draw
-    - gridtk
 test:
   imports:
     - {{ name }}
@@ -85,7 +81,7 @@ test:
     - sphinx_rtd_theme
 
 about:
+  summary: Baseline Algorithms for Remote Photoplethysmography (rPPG)
   home: https://www.idiap.ch/software/bob/
   license: GPL-3.0
-  summary: Bob's algorithms for remote PPG
   license_family: GPL
