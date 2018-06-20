@@ -11,14 +11,14 @@ def build_segments(signal, length):
 
   Parameters
   ----------
-  signal: 1d numpy array
+  signal: numpy.ndarray
     The signal to be processed.
   length: int
     The length of the segments.
 
   Returns
   -------
-  segments: 2d numpy array (n_segments, length)
+  segments: numpy.ndarray 
     the segments composing the signal.
   end_index: int
     The length of the signal (there may be a trail smaller
@@ -39,14 +39,14 @@ def prune_segments(segments, threshold):
 
   Parameters
   ----------
-  segments: 2d numpy array
+  segments: numpy.ndarray
     The set of segments.
   threshold: float
     Threshold on the standard deviation.
 
   Returns
   -------
-  pruned_segments: 2d numpy array
+  pruned_segments: numpy.ndarray
     The set of "stable" segments.
   gaps: list of length (# of retained segments)
     Boolean list that tells if a gap should be accounted for
@@ -81,7 +81,7 @@ def build_final_signal(segments, gaps):
 
   Parameters
   ----------
-  segments: 2d numpy array
+  segments: numpy.ndarray
     The set of remaining segments.
   gaps: list
     Boolean list that tells if a gap should be accounted for
@@ -89,7 +89,7 @@ def build_final_signal(segments, gaps):
   
   Returns
   -------
-  final_signal: 1d numpy array
+  final_signal: numpy.ndarray
     The final signal.
   
   """
@@ -121,7 +121,7 @@ def build_final_signal_cvpr14(segments, gaps):
 
   Parameters
   ----------
-  segments: 2d numpy array
+  segments: numpy.ndarray
     The set of remaining segments.
   gaps: list
     Boolean list that tells if a gap should be accounted for
@@ -129,7 +129,7 @@ def build_final_signal_cvpr14(segments, gaps):
   
   Returns
   -------
-  final_signal: 1d numpy array
+  final_signal: numpy.ndarray
     The final signal.
   
   """

@@ -25,9 +25,9 @@ def kp66_to_mask(image, keypoints, indent=10, plot=False):
 
   Parameters
   ----------
-  image: 3d numpy array
+  image: numpy.ndarray
     The current frame.
-  keypoints: 2d numpy array (66, 2)
+  keypoints: numpy.ndarray 
     the set of 66 keypoints retrieved by DRMF.
   indent: int
     The percentage of the facewidth [in pixels] by which 
@@ -108,7 +108,7 @@ def get_mask(image, mask_points):
 
   Parameters
   ----------
-  image: 3d numpy array
+  image: numpy.ndarray
     The current frame.
   mask_points: list of tuples, 9x2
     The points corresponding to vertices of the mask.
@@ -143,7 +143,7 @@ def  get_good_features_to_track(face, npoints, quality=0.01, min_distance=10, pl
 
   Parameters
   ----------
-  face: 3d numpy array
+  face: numpy.ndarray
     The cropped face image
   npoints: int
     The maximum number of strong corners you want to detect
@@ -158,7 +158,7 @@ def  get_good_features_to_track(face, npoints, quality=0.01, min_distance=10, pl
 
   Returns
   -------
-  corners: numpy array (npoints, 1, 2)
+  corners: numpy.ndarray 
     the detected strong corners.
   
   """
@@ -184,18 +184,18 @@ def track_features(previous, current, previous_points, plot=False):
 
   Parameters
   ----------
-  previous: 3d numpy array
+  previous: numpy.ndarray
     the previous frame.
-  current: 3d numpy array
+  current: numpy.ndarray
     the current frame.
-  previous_points: numpy array (npoints, 1, 2)
+  previous_points: numpy.ndarray
     the set of keypoints to track (in the previous frame).
   plot: bool
     Plots the keypoints projected on the current frame.
 
   Returns
   -------
-  current_points: numpy array (npoints, 1, 2)
+  current_points: numpy.ndarray
     the set of keypoints in the current frame.    
   
   """
@@ -226,14 +226,14 @@ def find_transformation(previous_points, current_points):
 
   Parameters
   ----------
-  previous_points: numpy array
+  previous_points: numpy.ndarray
     Set of 'starting' 2d points 
-  current_points: numpy array
+  current_points: numpy.ndarray
     Set of 'destination' 2d points
 
   Returns
   -------
-  transformation_matrix: numpy array (3,2)
+  transformation_matrix: numpy.ndarray
     the affine transformation matrix between
     the two sets of points. 
   
@@ -247,15 +247,15 @@ def get_current_mask_points(previous_mask_points, transfo_matrix):
 
   Parameters
   ----------
-  previous_mask_points: numpy array
+  previous_mask_points: numpy.ndarray
     The points forming the mask in the previous frame
-  transformation_matrix: numpy array (3x2)
+  transformation_matrix: numpy.ndarray
     the affine transformation matrix between
     the two sets of points. 
 
   Returns
   -------
-  current_mask_points: numpy array
+  current_mask_points: numpy.ndarray
     The points forming the mask in the current frame
   
   """
@@ -270,7 +270,7 @@ def compute_average_colors_mask(image, mask, plot=False):
 
   Parameters
   ----------
-  image: 3d numpy array 
+  image: numpy.ndarray 
     The image containing the face.
   mask: 2d numpy boolean array
     A boolean array of the size of the original image, where the region
@@ -300,7 +300,7 @@ def compute_average_colors_wholeface(image, plot=False):
 
   Parameters
   ----------
-  image: 3d numpy array 
+  image: numpy.ndarray 
     The cropped face image
   plot: bool
     Plot the mask as an overlay on the original image.

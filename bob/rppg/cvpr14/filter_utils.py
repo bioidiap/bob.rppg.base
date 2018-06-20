@@ -11,14 +11,14 @@ def detrend(signal, Lambda):
   
   Parameters
   ----------
-  signal: 1d numpy array
+  signal: numpy.ndarray
     The signal where you want to remove the trend.
   Lambda: int
     The smoothing parameter.
 
   Returns
   ------- 
-  filtered_signal: 1d numpy array
+  filtered_signal: numpy.ndarray
     The detrended signal.
   
   """
@@ -42,14 +42,14 @@ def average(signal, window_size):
 
   Parameters
   ----------
-  signal: 1d numpy array
+  signal: numpy.ndarray
     The signal to filter.
   window_size: int
     The size of the window to compute the average.
 
   Returns
   ------- 
-  filtered_signal: 1d numpy array
+  filtered_signal: numpy.ndarray
     The averaged signal.
   
   """
