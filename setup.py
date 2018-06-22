@@ -32,6 +32,7 @@ setup(
 
   entry_points={
     'console_scripts': [
+      'cvpr14_extract_pulses.py = bob.rppg.cvpr14.script.extract_pulses:main',
       'cvpr14_extract_signals.py = bob.rppg.cvpr14.script.extract_signals:main',
       'cvpr14_video2skin.py = bob.rppg.cvpr14.script.video2skin:main',
       'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
