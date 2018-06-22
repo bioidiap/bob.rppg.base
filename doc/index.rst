@@ -32,8 +32,6 @@ Documentation
 .. toctree::
    :maxdepth: 3
    
-   guide_bbox
-
    guide_cvpr14
    py_api_cvpr14
 
