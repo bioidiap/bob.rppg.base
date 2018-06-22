@@ -48,7 +48,7 @@ def kp66_to_mask(image, keypoints, indent=10, plot=False):
     The points corresponding to vertices of the mask.
   
   """
-  assert keypoints.shape[0] == 66, "You should provide a set 66 keypoints"
+  assert keypoints.shape[0] == 66  or keypoints.shape[0] == 68, "You should provide a set of 66 (DRMF) or 68 (dlib ) keypoints"
 
   if plot:
     imkey = numpy.copy(image)
