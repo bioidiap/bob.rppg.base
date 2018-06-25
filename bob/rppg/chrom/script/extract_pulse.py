@@ -4,7 +4,8 @@
 """Pulse extraction using CHROM algorithm (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...]
            [--dbdir=<path>] [--outdir=<path>]
            [--start=<int>] [--end=<int>] [--motion=<float>]
            [--threshold=<float>] [--skininit]
@@ -19,11 +20,11 @@ Usage:
 Options:
   -h, --help                Show this screen
   -V, --version             Show version
-  -p, --protocol=<string>   Protocol [default: all].
+  -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -d, --dbdir=<path>        The path to the database on your disk. If not set,
-                            defaults to Idiap standard locations.
+  -d, --dbdir=<path>        The path to the directory where video sequences are stored 
+                            from the face area will be stored [default: pulse]
   -o, --outdir=<path>       The path to the directory where signal extracted 
                             from the face area will be stored [default: pulse]
   --start=<int>             Starting frame index [default: 0].
@@ -48,9 +49,9 @@ Options:
 
 Example:
 
-  To run the pulse extraction for the cohface database
+  To run the pulse extraction 
 
-    $ %(prog)s cohface -v
+    $ %(prog)s config.py -v
 
 See '%(prog)s --help' for more information.
 
@@ -65,6 +66,9 @@ from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
 from docopt import docopt
+
+from bob.extension.config import load
+from ...base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -93,45 +97,36 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+  
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', '')
+  outdir = get_parameter(args, configuration, 'outdir', 'pulse')
+  dbdir = get_parameter(args, configuration, 'dbdir', '')
+  start = get_parameter(args, configuration, 'start', 0)
+  end = get_parameter(args, configuration, 'end', 0)
+  motion = get_parameter(args, configuration, 'motion', 0.0)
+  threshold = get_parameter(args, configuration, 'threshold', 0.5)
+  skininit = get_parameter(args, configuration, 'skininit', False)
+  framerate = get_parameter(args, configuration, 'framerate', 61)
+  order = get_parameter(args, configuration, 'order', 128)
+  window = get_parameter(args, configuration, 'window', 0)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+  
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
+  set_verbosity_level(logger, verbosity_level)
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -146,22 +141,22 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
   # build the bandpass filter one and for all
-  bandpass_filter = build_bandpass_filter(float(args['--framerate']), int(args['--order']), bool(args['--plot']))
+  bandpass_filter = build_bandpass_filter(framerate, order, plot)
 
   # does the actual work - for every video in the available dataset, 
   # extract the signals and dumps the results to the corresponding directory
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(outdir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
     
@@ -171,8 +166,8 @@ def main(user_input=None):
 
     # indices where to start and to end the processing
     logger.debug("Sequence length = {0}".format(len(video)))
-    start_index = int(args['--start'])
-    end_index = int(args['--end'])
+    start_index = start
+    end_index = end
     if (end_index == 0):
       end_index = len(video) 
     if end_index > len(video):
@@ -185,7 +180,7 @@ def main(user_input=None):
       nb_frames = end_index - start_index
 
     # the grayscale difference between two consecutive frames (for stable frame selection)
-    if bool(args['--motion']):
+    if motion:
       diff_motion = numpy.zeros((nb_frames-1, 1),  dtype='float64')
 
     # load the result of face detection
@@ -211,24 +206,24 @@ def main(user_input=None):
           bbox, quality = bob.ip.facedetect.detect_single_face(frame)
 
         # motion difference (if asked for)
-        if float(args['--motion']) > 0 and (i < (len(video) - 1)) and (counter > 0):
+        if motion > 0 and (i < (len(video) - 1)) and (counter > 0):
           current = crop_face(frame, bbox, bbox.size[1])
           diff_motion[counter-1] = compute_gray_diff(face, current)
         
         face = crop_face(frame, bbox, bbox.size[1])
 
-        if bool(args['--plot']) and args['--verbose'] >= 2:
+        if plot and verbosity_level >= 2:
           from matplotlib import pyplot
           pyplot.imshow(numpy.rollaxis(numpy.rollaxis(face, 2),2))
           pyplot.show()
 
         # skin filter
-        if counter == 0 or bool(args['--skininit']):
+        if counter == 0 or skininit:
           skin_filter.estimate_gaussian_parameters(face)
           logger.debug("Skin color parameters:\nmean\n{0}\ncovariance\n{1}".format(skin_filter.mean, skin_filter.covariance))
-        skin_mask = skin_filter.get_skin_mask(face, float(args['--threshold']))
+        skin_mask = skin_filter.get_skin_mask(face, threshold)
 
-        if bool(args['--plot']) and args['--verbose'] >= 2:
+        if plot and verbosity_level >= 2:
           from matplotlib import pyplot
           skin_mask_image = numpy.copy(face)
           skin_mask_image[:, skin_mask] = 255
@@ -260,14 +255,14 @@ def main(user_input=None):
         break
 
     # select the most stable number of consecutive frames, if asked for
-    if float(args['--motion']) > 0:
-      n_stable_frames_to_keep = int(float(args['--motion']) * nb_frames)
+    if motion > 0:
+      n_stable_frames_to_keep = int(motion * nb_frames)
       logger.info("Number of stable frames kept for motion -> {0}".format(n_stable_frames_to_keep))
       index = select_stable_frames(diff_motion, n_stable_frames_to_keep)
       logger.info("Stable segment -> {0} - {1}".format(index, index + n_stable_frames_to_keep))
       chrom = chrom[index:(index + n_stable_frames_to_keep),:]
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       f, axarr = pyplot.subplots(2, sharex=True)
       axarr[0].plot(range(chrom.shape[0]), chrom[:, 0], 'k')
@@ -283,7 +278,7 @@ def main(user_input=None):
     x_bandpassed = filtfilt(bandpass_filter, numpy.array([1]), chrom[:, 0])
     y_bandpassed = filtfilt(bandpass_filter, numpy.array([1]), chrom[:, 1])
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       f, axarr = pyplot.subplots(2, sharex=True)
       axarr[0].plot(range(x_bandpassed.shape[0]), x_bandpassed, 'k')
@@ -297,8 +292,8 @@ def main(user_input=None):
     pulse = x_bandpassed - alpha * y_bandpassed
 
     # overlap-add if window_size != 0
-    if int(args['--window']) > 0:
-      window_size = int(args['--window'])
+    if window > 0:
+      window_size = window
       window_stride = window_size / 2
       for w in range(0, (len(pulse)-window_size), window_stride):
         pulse[w:w+window_size] = 0.0
@@ -309,7 +304,7 @@ def main(user_input=None):
         sw *= numpy.hanning(window_size)
         pulse[w:w+window_size] += sw
     
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       f, axarr = pyplot.subplots(1)
       pyplot.plot(range(pulse.shape[0]), pulse, 'k')
