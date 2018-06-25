@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Non Rigid Motion Elimination for color signals (%(version)s)
+"""Non Rigid Motion Elimination (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
-           [--verbose ...] [--plot] [--indir=<path>] [--outdir=<path>]
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...] 
+           [--verbose ...] [--plot] [--illumdir=<path>] [--motiondir=<path>]
            [--seglength=<int>] [--save-threshold=<path>] [--load-threshold=<path>]
            [--cutoff=<float>] [--cvpr14] [--overwrite]
 
@@ -22,9 +23,9 @@ Options:
   -p, --protocol=<string>       Protocol [default: all].
   -s, --subset=<string>         Data subset to load. If nothing is provided 
                                 all the data sets will be loaded.
-  -i, --indir=<path>            The path to the saved illumination corrected signal
+  -i, --illumdir=<path>            The path to the saved illumination corrected signal
                                 on your disk [default: illumination].
-  -o, --outdir=<path>           The path to the output directory where the resulting
+  -o, --motiondir=<path>           The path to the output directory where the resulting
                                 motion corrected signals will be stored
                                 [default: motion].
   -L, --seglength=<int>         The length of the segments [default: 61]
@@ -43,17 +44,9 @@ Options:
 
 Examples:
 
-  To run the motion elimination for the cohface database
+  To run the motion elimination 
 
-    $ %(prog)s cohface -v
-
-  To just run a preliminary benchmark tests on the first 10 videos, do:
-
-    $ %(prog)s cohface -v -l 10
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
@@ -69,11 +62,14 @@ logger = bob.core.log.setup("bob.rppg.base")
 
 from docopt import docopt
 
+from bob.extension.config import load
+
 version = pkg_resources.require('bob.rppg.base')[0].version
 
 import numpy
 import bob.io.base
 
+from ...base.utils import get_parameter
 from ..motion_utils import build_segments
 from ..motion_utils import prune_segments 
 from ..motion_utils import build_final_signal 
@@ -91,55 +87,44 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Non-rigid motion elimination for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', '')
+  subset = get_parameter(args, configuration, 'subset', 'all')
+  illumdir = get_parameter(args, configuration, 'illumdir', 'illumination')
+  motiondir = get_parameter(args, configuration, 'motiondir', 'motion')
+  seglength = get_parameter(args, configuration, 'seglength', 61)
+  cutoff = get_parameter(args, configuration, 'cutoff', 0.05)
+  save_threshold = get_parameter(args, configuration, 'save-threshold', 'threshold.txt')
+  load_threshold = get_parameter(args, configuration, 'load-threshold', '')
+  cvpr14 = get_parameter(args, configuration, 'cvpr14', False)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+ 
+  print(load_threshold)
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, args['--verbose'])
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # determine the threshold for the standard deviation to be applied to the segments
   # this part is not executed if a threshold is provided
-  if (args['--load-threshold']) == 'None':
+  if load_threshold == 'None':
     all_stds = []
     for obj in objects:
 
       # load the llumination corrected signal
       logger.debug("Computing standard deviations in color signals from `%s'...", obj.path)
-      illum_file = obj.make_path(args['--indir'], '.hdf5')
+      illum_file = obj.make_path(illumdir, '.hdf5')
       try:
         color = bob.io.base.load(illum_file)
       except (IOError, RuntimeError) as e:
@@ -152,7 +137,7 @@ def main(user_input=None):
         continue
       
       # get the standard deviation in the segments
-      green_segments, __ = build_segments(color, int(args['--seglength']))
+      green_segments, __ = build_segments(color, seglength)
       std_green = numpy.std(green_segments, 1, ddof=1)
       all_stds.extend(std_green.tolist())
 
@@ -160,34 +145,34 @@ def main(user_input=None):
 
     # sort the std and find the 5% at the top to get the threshold
     sorted_stds = sorted(all_stds, reverse=True)
-    cut_index = int(float(args['--cutoff']) * len(all_stds)) + 1
+    cut_index = int(cutoff * len(all_stds)) + 1
     threshold = sorted_stds[cut_index]
-    logger.info("The threshold was {0} (removing {1} percent of the largest segments)".format(threshold, 100*float(args['--cutoff'])))
+    logger.info("The threshold was {0} (removing {1} percent of the largest segments)".format(threshold, 100*cutoff))
 
     # write threshold to file
-    f = open(args['--save-threshold'], 'w')
+    f = open(save_threshold, 'w')
     f.write(str(threshold))
     f.close()
 
   else:
     # load threshold
-    f = open(args['--load-threshold'], 'r')
+    f = open(load_threshold, 'r')
     threshold = float(f.readline().rstrip())
 
     # cut segments where the std is too large
     for obj in objects:
 
       # expected output file
-      output = obj.make_path(args['--outdir'], '.hdf5')
+      output = obj.make_path(motiondir, '.hdf5')
 
       # if output exists and not overwriting, skip this file
-      if os.path.exists(output) and not args['--overwrite']:
+      if os.path.exists(output) and not overwrite:
         logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
         continue
 
       # load the color signals
       logger.debug("Eliminating motion in color signals from `%s'...", obj.path)
-      illum_file = obj.make_path(args['--indir'], '.hdf5')
+      illum_file = obj.make_path(illumdir, '.hdf5')
       try:
         color = bob.io.base.load(illum_file)
       except (IOError, RuntimeError) as e:
@@ -201,7 +186,7 @@ def main(user_input=None):
         continue
 
       # divide the signals into segments
-      green_segments, end_index = build_segments(color, int(args['--seglength']))
+      green_segments, end_index = build_segments(color, seglength)
       # remove segments with high variability
       pruned_segments, gaps, cut_index = prune_segments(green_segments, threshold)
       
@@ -209,12 +194,12 @@ def main(user_input=None):
       if pruned_segments.shape[0] == 0:
         logger.warn("All segments have been discared in {0}".format(obj.path))
         continue
-      if bool(args['--cvpr14']):
+      if cvpr14:
         corrected_green = build_final_signal_cvpr14(pruned_segments, gaps)
       else:
         corrected_green = build_final_signal(pruned_segments, gaps)
      
-      if bool(args['--plot']):
+      if plot:
         from matplotlib import pyplot
         f, axarr = pyplot.subplots(2, sharex=True)
         axarr[0].plot(range(end_index), color[:end_index], 'g')
@@ -229,8 +214,8 @@ def main(user_input=None):
         pyplot.show()
 
       # saves the data into an HDF5 file with a '.hdf5' extension
-      outdir = os.path.dirname(output)
-      if not os.path.exists(outdir): bob.io.base.create_directories_safe(outdir)
+      outputdir = os.path.dirname(output)
+      if not os.path.exists(outputdir): bob.io.base.create_directories_safe(outputdir)
       bob.io.base.save(corrected_green, output)
       logger.info("Output file saved to `%s'...", output)
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Generate resutls from heart rate computation (%(version)s)
+"""Generate results from heart rate computation (%(version)s)
   
 Usage:
-  %(prog)s (hci | cohface) [--protocol=<string>] [--subset=<string> ...] 
-           [--verbose ...] [--plot] [--outdir=<path>] [--indir=<path>] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...] 
+           [--verbose ...] [--plot] [--resultdir=<path>] [--hrdir=<path>] 
            [--overwrite] 
 
   %(prog)s (--help | -h)
@@ -20,21 +21,17 @@ Options:
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -i, --indir=<path>        The path to the saved heart rate values on your disk. 
-  -o, --outdir=<path>       The path to the output directory where the results
+  -i, --hrdir=<path>        The path to the saved heart rate values on your disk. 
+  -o, --resultdir=<path>       The path to the output directory where the results
                             will be stored [default: performances].
   -O, --overwrite           By default, we don't overwrite existing files. 
                             Set this flag if you want to overwrite existing files.
 
 Examples:
 
-  To run the results generation for the cohface database
+  To run the results generation 
 
-    $ %(prog)s cohface -v
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
@@ -49,6 +46,9 @@ from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
 from docopt import docopt
+
+from bob.extension.config import load
+from bob.rppg.base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -67,45 +67,28 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', '')
+  subset = get_parameter(args, configuration, 'subset', 'all')
+  hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
+  resultdir = get_parameter(args, configuration, 'resultdir', 'results')
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+  
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, args['--verbose'])
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # errors
   errors = []
@@ -118,20 +101,19 @@ def main(user_input=None):
   ################
   ### LET'S GO ###
   ################
-  outdir = args['--outdir']
   
   # if output dir exists and not overwriting, stop 
-  if os.path.exists(outdir) and not args['--overwrite']:
-    logger.info("Skipping output `%s': already exists, use --overwrite to force an overwrite", outdir)
+  if os.path.exists(resultdir) and not overwrite:
+    logger.info("Skipping output `%s': already exists, use --overwrite to force an overwrite", resultdir)
     sys.exit()
   else: 
-    bob.io.base.create_directories_safe(outdir)
+    bob.io.base.create_directories_safe(resultdir)
 
   for obj in objects:
 
     # load the heart rate 
     logger.debug("Loading computed heart rate from `%s'...", obj.path)
-    hr_file = obj.make_path(args['--indir'], '.hdf5')
+    hr_file = obj.make_path(hrdir, '.hdf5')
     try:
       hr = bob.io.base.load(hr_file)
     except (IOError, RuntimeError) as e:
@@ -169,7 +151,7 @@ def main(user_input=None):
   logger.info(pearson_text)
 
   # statistics in a text file
-  stats_filename = os.path.join(outdir, 'stats.txt')
+  stats_filename = os.path.join(resultdir, 'stats.txt')
   stats_file = open(stats_filename, 'w')
   stats_file.write(rmse_text + "\n")
   stats_file.write(mean_err_percent_text + "\n")
@@ -185,7 +167,7 @@ def main(user_input=None):
   pyplot.xlabel('Ground truth [bpm]')
   pyplot.ylabel('Estimated heart-rate [bpm]')
   ax.set_title('Scatter plot')
-  scatter_file = os.path.join(outdir, 'scatter.png')
+  scatter_file = os.path.join(resultdir, 'scatter.png')
   pyplot.savefig(scatter_file)
 
   # histogram of error
@@ -193,7 +175,7 @@ def main(user_input=None):
   ax2 = f2.add_subplot(1,1,1)
   ax2.hist(errors, bins=50, )
   ax2.set_title('Distribution of the error')
-  distribution_file = os.path.join(outdir, 'error_distribution.png')
+  distribution_file = os.path.join(resultdir, 'error_distribution.png')
   pyplot.savefig(distribution_file)
 
   # distribution of HR
@@ -204,7 +186,7 @@ def main(user_input=None):
   pyplot.hist(inferred, label='Estimated HR', color='b', **histoargs)
   pyplot.ylabel("Test set")
 
-  if bool(args['--plot']):
+  if plot:
     pyplot.show()
   
   return 0

@@ -17,7 +17,7 @@ Usage:
 Options:
   -h, --help                Show this screen
   -V, --version             Show version
-  -p, --protocol=<string>   Protocol [default: all].
+  -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the sets will be loaded.
   -f, --facedir=<path>      The path to the directory where signal extracted 
@@ -94,10 +94,6 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
-  # if the user wants more verbosity, lowers the logging level
-  from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
-
   # load configuration file
   configuration = load([os.path.join(args['<configuration>'])])
   
@@ -116,9 +112,13 @@ def main(user_input=None):
   wholeface = get_parameter(args, configuration, 'wholeface', False)
   verbosity_level = get_parameter(args, configuration, 'verbose', 0)
   
+  # if the user wants more verbosity, lowers the logging level
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, verbosity_level)
+  
   # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
   if hasattr(configuration, 'database'):
-    objects = configuration.database.objects(args['--protocol'], args['--subset'])
+    objects = configuration.database.objects(protocol, subset)
   else:
     logger.error("Please provide a database in your configuration file !")
     sys.exit()
@@ -136,7 +136,7 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
@@ -145,11 +145,11 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output_face = obj.make_path(args['--facedir'], '.hdf5')
-    output_bg = obj.make_path(args['--bgdir'], '.hdf5')
+    output_face = obj.make_path(facedir, '.hdf5')
+    output_bg = obj.make_path(bgdir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if (os.path.exists(output_face) and os.path.exists(output_bg)) and not args['--overwrite']:
+    if (os.path.exists(output_face) and os.path.exists(output_bg)) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output_face)
       continue
     
@@ -175,9 +175,9 @@ def main(user_input=None):
         # -> infer the mask from the keypoints
         # -> detect the face
         # -> get "good features" inside the face
-        if not bool(args['--wholeface']):
+        if not wholeface:
           kpts = obj.load_drmf_keypoints()
-          mask_points, mask = kp66_to_mask(frame, kpts, int(args['--indent']), bool(args['--plot']))
+          mask_points, mask = kp66_to_mask(frame, kpts, indent, plot)
 
         try: 
           bbox = bounding_boxes[i]
@@ -188,9 +188,8 @@ def main(user_input=None):
         facewidth = bbox.size[1]
         face = crop_face(frame, bbox, facewidth)
         
-        if not bool(args['--wholeface']):
-          good_features = get_good_features_to_track(face,int(args['--npoints']), 
-              float(args['--quality']), int(args['--distance']), bool(args['--plot']))
+        if not wholeface:
+          good_features = get_good_features_to_track(face, npoints, quality, distance, plot)
       else:
         # subsequent frames:
         # -> crop the face with the bounding_boxes of the previous frame (so
@@ -200,8 +199,8 @@ def main(user_input=None):
         #    current corners
         # -> apply this transformation to the mask
         face = crop_face(frame, prev_bb, facewidth)
-        if not bool(args['--wholeface']):
-          good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
+        if not wholeface:
+          good_features = track_features(prev_face, face, prev_features, plot)
           project = find_transformation(prev_features, good_features)
           if project is None: 
             logger.warn("Sequence {0}, frame {1} : No projection was found"
@@ -221,11 +220,9 @@ def main(user_input=None):
         prev_bb = bb
 
       
-      if not bool(args['--wholeface']):
+      if not wholeface:
         prev_face = crop_face(frame, prev_bb, facewidth)
-        prev_features = get_good_features_to_track(face, int(args['--npoints']),
-            float(args['--quality']), int(args['--distance']),
-            bool(args['--plot']))
+        prev_features = get_good_features_to_track(face, npoints, quality, distance, plot)
         if prev_features is None:
           logger.warn("Sequence {0}, frame {1} No features to track"  
               " detected in the current frame, using the previous ones"
@@ -234,14 +231,14 @@ def main(user_input=None):
 
         # get the bottom face region average colors
         face_mask = get_mask(frame, mask_points)
-        face_color[i] = compute_average_colors_mask(frame, face_mask, bool(args['--plot']))
+        face_color[i] = compute_average_colors_mask(frame, face_mask, plot)
       else:
-        face_color[i] = compute_average_colors_wholeface(face, bool(args['--plot']))
+        face_color[i] = compute_average_colors_wholeface(face, plot)
 
       # get the background region average colors
       bg_mask = numpy.zeros((frame.shape[1], frame.shape[2]), dtype=bool)
       bg_mask[:100, :100] = True
-      bg_color[i] = compute_average_colors_mask(frame, bg_mask, bool(args['--plot']))
+      bg_color[i] = compute_average_colors_mask(frame, bg_mask, plot)
 
     # saves the data into an HDF5 file with a '.hdf5' extension
     out_facedir = os.path.dirname(output_face)

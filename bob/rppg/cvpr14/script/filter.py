@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Filtering of color signal (%(version)s)
+"""Filtering (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]  
-           [--verbose ...] [--plot] [--indir=<path>] [--outdir=<path>]
-           [--lambda=<int>] [--window=<int>] [--framerate=<int>] [--order=<int>]
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...]  
+           [--verbose ...] [--plot] [--motiondir=<path>] [--pulsedir=<path>]
+           [--Lambda=<int>] [--window=<int>] [--framerate=<int>] [--order=<int>]
            [--overwrite] [--gridcount]
 
   %(prog)s (--help | -h)
@@ -22,11 +23,11 @@ Options:
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -i, --indir=<path>        The path to the saved signals to be filtered on
+  -i, --motiondir=<path>        The path to the saved signals to be filtered on
                             your disk [default: motion].
-  -o, --outdir=<path>       The path to the output directory where the resulting
+  -o, --pulsedir=<path>       The path to the output directory where the resulting
                             color signals will be stored [default: filtered].
-  --lambda=<int>            Lambda parameter for detrending (see article) [default: 300]
+  --Lambda=<int>            Lambda parameter for detrending (see article) [default: 300]
   --window=<int>            Moving window length [default: 23]
   -f, --framerate=<int>     Frame-rate of the video sequence [default: 61]
   --order=<int>             Bandpass filter order [default: 128]
@@ -37,13 +38,9 @@ Options:
 
 Examples:
 
-  To run the filters on the cohface database
+  To run the filters 
 
-    $ %(prog)s cohface -v
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
@@ -67,6 +64,8 @@ logger = bob.core.log.setup("bob.rppg.base")
 
 from docopt import docopt
 
+from bob.extension.config import load
+
 version = pkg_resources.require('bob.rppg.base')[0].version
 
 import numpy
@@ -75,6 +74,7 @@ import bob.io.base
 from ..filter_utils import detrend
 from ..filter_utils import average 
 from ...base.utils import build_bandpass_filter 
+from ...base.utils import get_parameter
 
 def main(user_input=None):
 
@@ -88,45 +88,33 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Filtering for signals (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+  
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', '')
+  motiondir = get_parameter(args, configuration, 'motiondir', 'motion')
+  pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
+  Lambda = get_parameter(args, configuration, 'Lambda', 300)
+  window = get_parameter(args, configuration, 'window', 23)
+  framerate = get_parameter(args, configuration, 'framerate', 61)
+  order = get_parameter(args, configuration, 'order', 128)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
+  set_verbosity_level(logger, verbosity_level)
  
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -141,12 +129,12 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
   # build the bandpass filter one and for all
-  b = build_bandpass_filter(float(args['--framerate']), int(args['--order']), bool(args['--plot']))
+  b = build_bandpass_filter(framerate, order, plot)
 
   ################
   ### LET'S GO ###
@@ -154,16 +142,16 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(pulsedir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
 
     # load the corrected color signals of shape (3, nb_frames)
     logger.info("Filtering in signal from `%s'...", obj.path)
-    motion_file = obj.make_path(args['--indir'], '.hdf5')
+    motion_file = obj.make_path(motiondir, '.hdf5')
     try:
       motion_corrected_signal = bob.io.base.load(motion_file)
     except (IOError, RuntimeError) as e:
@@ -177,15 +165,15 @@ def main(user_input=None):
       continue
 
     # detrend
-    green_detrend = detrend(motion_corrected_signal, int(args['--lambda']))
+    green_detrend = detrend(motion_corrected_signal, Lambda)
     # average
-    green_averaged = average(green_detrend, int(args['--window']))
+    green_averaged = average(green_detrend, window)
     # bandpass
     from scipy.signal import filtfilt
     green_bandpassed = filtfilt(b, numpy.array([1]), green_averaged)
 
     # plot the result
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       f, ax = pyplot.subplots(4, sharex=True)
       ax[0].plot(range(motion_corrected_signal.shape[0]), motion_corrected_signal, 'g')
@@ -201,8 +189,8 @@ def main(user_input=None):
     output_data = numpy.copy(green_bandpassed)
 
     # saves the data into an HDF5 file with a '.hdf5' extension
-    outdir = os.path.dirname(output)
-    if not os.path.exists(outdir): bob.io.base.create_directories_safe(outdir)
+    pulse_outdir = os.path.dirname(output)
+    if not os.path.exists(pulse_outdir): bob.io.base.create_directories_safe(pulse_outdir)
     bob.io.base.save(output_data, output)
     logger.info("Output file saved to `%s'...", output)
   

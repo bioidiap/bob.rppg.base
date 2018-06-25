@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Illumination rectification for database videos (%(version)s)
+"""Illumination rectification (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
-           [--verbose ...] [--plot]
-           [--facedir=<path>][--bgdir=<path>] [--outdir=<path>] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...] 
+           [--facedir=<path>][--bgdir=<path>] [--illumdir=<path>] 
            [--start=<int>] [--end=<int>] [--step=<float>] 
            [--length=<int>] [--overwrite] [--gridcount]
+           [--verbose ...] [--plot]
 
   %(prog)s (--help | -h)
   %(prog)s (--version | -V)
@@ -27,7 +28,7 @@ Options:
                             green color on the face region [default: face].
   -b, --bgdir=<path>        The path to the directory containing the average
                             green color on the background [default: background]
-  -o, --outdir=<path>       The path to the output directory where the resulting
+  -o, --illumdir=<path>       The path to the output directory where the resulting
                             corrected signal will be stored [default: illumination]
   -s, --start=<int>         Index of the starting frame [default: 0].
   -e, --end=<int>           Index of the ending frame. If set to zero, the
@@ -41,13 +42,9 @@ Options:
 
 Examples:
 
-  To run the illumination rectification on the hci database
+  To run the illumination rectification 
 
-    $ %(prog)s hci -v
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
@@ -65,11 +62,14 @@ logger = bob.core.log.setup("bob.rppg.base")
 
 from docopt import docopt
 
+from bob.extension.config import load
+
 version = pkg_resources.require('bob.rppg.base')[0].version
 
 import numpy
 import bob.io.base
 
+from ...base.utils import get_parameter
 from ..illum_utils import rectify_illumination
 
 def main(user_input=None):
@@ -84,46 +84,34 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Illumination rectification for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', '')
+  subset = get_parameter(args, configuration, 'subset', 'all')
+  facedir = get_parameter(args, configuration, 'facedir', 'face')
+  bgdir = get_parameter(args, configuration, 'bgdir', 'bg')
+  illumdir = get_parameter(args, configuration, 'illumdir', 'illumination')
+  start = get_parameter(args, configuration, 'start', 0)
+  end = get_parameter(args, configuration, 'end', 0)
+  step = get_parameter(args, configuration, 'step', 0.05)
+  length = get_parameter(args, configuration, 'length', 1)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
+  set_verbosity_level(logger, verbosity_level)
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--facedir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--facedir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--facedir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--facedir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -138,7 +126,7 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
@@ -148,16 +136,16 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(illumdir, '.hdf5')
     logger.debug("expected output file -> {0}".format(output))
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
 
     # load the color signal of the face
-    face_file = obj.make_path(args['--facedir'], '.hdf5')
+    face_file = obj.make_path(facedir, '.hdf5')
     try:
       face = bob.io.base.load(face_file)
     except (IOError, RuntimeError) as e:
@@ -165,7 +153,7 @@ def main(user_input=None):
       continue
 
     # load the color signal of the background
-    bg_file = obj.make_path(args['--bgdir'], '.hdf5')
+    bg_file = obj.make_path(bgdir, '.hdf5')
     try:
       bg = bob.io.base.load(bg_file)
     except (IOError, RuntimeError) as e:
@@ -174,8 +162,8 @@ def main(user_input=None):
 
     # indices where to start and to end the processing
     logger.debug("Sequence length = {0}".format(face.shape[0]))
-    start_index = int(args['--start'])
-    end_index = int(args['--end'])
+    start_index = start
+    end_index = end
     if (end_index == 0):
       end_index = face.shape[0]
     if end_index > face.shape[0]:
@@ -190,9 +178,9 @@ def main(user_input=None):
     logger.debug("Processing %d frames...", face.shape[0])
 
     # apply NLMS filtering
-    corrected_green = rectify_illumination(face, bg, float(args['--step']), int(args['--length']))
+    corrected_green = rectify_illumination(face, bg, step, length)
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       f, axarr = pyplot.subplots(3, sharex=True)
       axarr[0].plot(range(face.shape[0]), face, 'g')
@@ -204,8 +192,8 @@ def main(user_input=None):
       pyplot.show()
 
     # saves the data into an HDF5 file with a '.hdf5' extension
-    outdir = os.path.dirname(output)
-    if not os.path.exists(outdir): bob.io.base.create_directories_safe(outdir)
+    outputdir = os.path.dirname(output)
+    if not os.path.exists(outputdir): bob.io.base.create_directories_safe(outputdir)
     bob.io.base.save(corrected_green, output)
     logger.info("Output file saved to `%s'...", output)
 

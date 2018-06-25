@@ -138,7 +138,7 @@ def get_parameter(args, configuration, keyword, default):
   arg = _type(args[args_kw])
   if hasattr(configuration, keyword):
     arg = getattr(configuration, keyword)
-  if _type(args[args_kw]) is not default:
+  if _type(args[args_kw]) is not default and not hasattr(configuration, keyword):
     arg = _type(args[args_kw])
   return arg
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Frequency analysis of the filtered color signals to get the heart-rate (%(version)s)
+"""Frequency analysis of the pulse signal to get the heart-rate (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]  
-           [--verbose ...] [--plot] [--indir=<path>] [--outdir=<path>] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...]  
+           [--verbose ...] [--plot] [--pulsedir=<path>] [--hrdir=<path>] 
            [--framerate=<int>] [--nsegments=<int>] [--nfft=<int>] 
            [--overwrite] 
 
@@ -22,9 +23,9 @@ Options:
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -i, --indir=<path>        The path to the saved filtered signals on your disk
+  -i, --pulsedir=<path>        The path to the saved filtered signals on your disk
                             [default: filtered].
-  -o, --outdir=<path>       The path to the output directory where the resulting
+  -o, --hrdir=<path>       The path to the output directory where the resulting
                             color signals will be stored [default: heart-rate].
   -O, --overwrite           By default, we don't overwrite existing files. The
                             processing will skip those so as to go faster. If you
@@ -58,6 +59,9 @@ logger = setup("bob.rppg.base")
 
 from docopt import docopt
 
+from bob.extension.config import load
+from bob.rppg.base.utils import get_parameter
+
 version = pkg_resources.require('bob.rppg.base')[0].version
 
 import numpy
@@ -75,45 +79,34 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', '')
+  subset = get_parameter(args, configuration, 'subset', 'all')
+  pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
+  hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
+  framerate = get_parameter(args, configuration, 'framerate', 61)
+  nsegments = get_parameter(args, configuration, 'nsegments', 12)
+  nfft = get_parameter(args, configuration, 'nfft', 8192)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+ 
+  print(nsegments)
+  print(nfft)
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, args['--verbose'])
-
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+ 
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   ################
   ### LET'S GO ###
@@ -121,39 +114,38 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(hrdir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
 
     # load the filtered color signals of shape (3, nb_frames)
     logger.info("Frequency analysis of color signals from `%s'...", obj.path)
-    filtered_file = obj.make_path(args['--indir'], '.hdf5')
+    filtered_file = obj.make_path(pulsedir, '.hdf5')
     try:
       signal = bob.io.base.load(filtered_file)
     except (IOError, RuntimeError) as e:
       logger.warn("Skipping file `%s' (no color signals file available)", obj.path)
       continue
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       pyplot.plot(range(signal.shape[0]), signal, 'g')
       pyplot.title('Filtered green signal')
       pyplot.show()
 
     # find the segment length, such that we have 8 50% overlapping segments (Matlab's default)
-    segment_length = (2*signal.shape[0]) // (int(args['--nsegments']) + 1) 
+    segment_length = (2*signal.shape[0]) // (nsegments + 1) 
 
     # the number of points for FFT should be larger than the segment length ...
-    if int(args['--nfft']) < segment_length:
+    if nfft < segment_length:
       logger.warn("Skipping file `%s' (nfft < nperseg)", obj.path)
       continue
 
-    nfft = int(args['--nfft'])
     from scipy.signal import welch
-    green_f, green_psd = welch(signal, int(args['--framerate']), nperseg=segment_length, nfft=nfft)
+    green_f, green_psd = welch(signal, framerate, nperseg=segment_length, nfft=nfft)
 
     # find the max of the frequency spectrum in the range of interest
     first = numpy.where(green_f > 0.7)[0]
@@ -166,7 +158,7 @@ def main(user_input=None):
     hr = f_max*60.0
     logger.info("Heart rate = {0}".format(hr))
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
       pyplot.semilogy(green_f, green_psd, 'g')
       xmax, xmin, ymax, ymin = pyplot.axis()
