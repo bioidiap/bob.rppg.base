@@ -6,7 +6,7 @@
 Usage:
   %(prog)s <configuration>
            [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
+           [--facedir=<path>] [--bgdir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
            [--wholeface] [--overwrite] [--verbose ...] [--plot] [--gridcount]
 
