@@ -132,13 +132,29 @@ def get_parameter(args, configuration, keyword, default):
     The right value for the given keyword argument
 
   """
- 
+  
+  # get the keyword in a "docopt" friendly format
   args_kw = '--' + keyword.replace('_', '-')
+  
+  # get the type of this argument
   _type = type(default)
-  arg = _type(args[args_kw])
+
+  # get the default value 
+  arg_default = default 
+
+  # get the argument in the configuration file 
   if hasattr(configuration, keyword):
-    arg = getattr(configuration, keyword)
-  if _type(args[args_kw]) is not default and not hasattr(configuration, keyword):
-    arg = _type(args[args_kw])
-  return arg
+    arg_config = getattr(configuration, keyword)
+
+  # get the argument from the command-line
+  arg_command = _type(args[args_kw])
+ 
+  # if the argument was not specified in the config file
+  if not hasattr(configuration, keyword):
+    return arg_command
+  else:
+    if (arg_command == arg_default):
+      return arg_config
+    else:
+      return arg_command
 
