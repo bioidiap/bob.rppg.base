@@ -119,10 +119,7 @@ def main(user_input=None):
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, verbosity_level)
 
-  print(configuration.database)
   if hasattr(configuration, 'database'):
-    print(protocol)
-    print(subset)
     objects = configuration.database.objects(protocol, subset)
   else:
     logger.error("Please provide a database in your configuration file !")
