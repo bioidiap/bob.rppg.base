@@ -32,8 +32,7 @@ setup(
 
   entry_points={
     'console_scripts': [
-      'cvpr14_extract_pulses.py = bob.rppg.cvpr14.script.extract_pulses:main',
-      'cvpr14_extract_signals.py = bob.rppg.cvpr14.script.extract_signals:main',
+      'cvpr14_extract_face_and_bg_signals.py = bob.rppg.cvpr14.script.extract_face_and_bg_signals:main',
       'cvpr14_video2skin.py = bob.rppg.cvpr14.script.video2skin:main',
       'cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main',
       'cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main',
@@ -43,7 +42,8 @@ setup(
       'ssr_pulse.py = bob.rppg.ssr.script.spatial_subspace_rotation:main',
       'ssr_pulse_from_mask.py = bob.rppg.ssr.script.ssr_from_mask:main',
       'rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main',
-      'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main'
+      'rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main',
+      'rppg_check_differences.py = bob.rppg.base.script.check_differences:main'
       ],
     },
 
