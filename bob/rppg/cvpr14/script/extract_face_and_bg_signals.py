@@ -98,7 +98,7 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
   
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  protocol = get_parameter(args, configuration, 'protocol', 'None')
   subset = get_parameter(args, configuration, 'subset', '')
   facedir = get_parameter(args, configuration, 'facedir', 'face')
   bgdir = get_parameter(args, configuration, 'bgdir', 'bg')
