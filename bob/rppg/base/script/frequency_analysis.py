@@ -20,13 +20,13 @@ Options:
   -V, --version             Show version
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
-  -p, --protocol=<string>   Protocol [default: all].
+  -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -i, --pulsedir=<path>        The path to the saved filtered signals on your disk
-                            [default: filtered].
-  -o, --hrdir=<path>       The path to the output directory where the resulting
-                            color signals will be stored [default: heart-rate].
+  -i, --pulsedir=<path>     The path to the saved filtered signals on your disk
+                            [default: pulse].
+  -o, --hrdir=<path>        The path to the output directory where the resulting
+                            color signals will be stored [default: hr].
   -O, --overwrite           By default, we don't overwrite existing files. The
                             processing will skip those so as to go faster. If you
                             still would like me to overwrite them, set this flag.
@@ -83,7 +83,7 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', '')
+  protocol = get_parameter(args, configuration, 'protocol', 'None')
   subset = get_parameter(args, configuration, 'subset', 'all')
   pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
   hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
@@ -93,9 +93,6 @@ def main(user_input=None):
   overwrite = get_parameter(args, configuration, 'overwrite', False)
   plot = get_parameter(args, configuration, 'plot', False)
   verbosity_level = get_parameter(args, configuration, 'verbose', 0)
- 
-  print(nsegments)
-  print(nfft)
 
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level

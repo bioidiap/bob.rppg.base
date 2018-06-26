@@ -6,7 +6,7 @@
 Usage:
   %(prog)s <configuration>
            [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--outdir=<path>]
+           [--pulsedir=<path>]
            [--start=<int>] [--end=<int>] [--motion=<float>]
            [--threshold=<float>] [--skininit]
            [--framerate=<int>] [--order=<int>]
@@ -23,9 +23,7 @@ Options:
   -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -d, --dbdir=<path>        The path to the directory where video sequences are stored 
-                            from the face area will be stored [default: pulse]
-  -o, --outdir=<path>       The path to the directory where signal extracted 
+  -o, --pulsedir=<path>     The path to the directory where signal extracted 
                             from the face area will be stored [default: pulse]
   --start=<int>             Starting frame index [default: 0].
   --end=<int>               End frame index [default: 0].
@@ -99,12 +97,11 @@ def main(user_input=None):
 
   # load configuration file
   configuration = load([os.path.join(args['<configuration>'])])
-  
+ 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  protocol = get_parameter(args, configuration, 'protocol', 'None')
   subset = get_parameter(args, configuration, 'subset', '')
-  outdir = get_parameter(args, configuration, 'outdir', 'pulse')
-  dbdir = get_parameter(args, configuration, 'dbdir', '')
+  pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
   start = get_parameter(args, configuration, 'start', 0)
   end = get_parameter(args, configuration, 'end', 0)
   motion = get_parameter(args, configuration, 'motion', 0.0)
@@ -117,12 +114,15 @@ def main(user_input=None):
   plot = get_parameter(args, configuration, 'plot', False)
   gridcount = get_parameter(args, configuration, 'gridcount', False)
   verbosity_level = get_parameter(args, configuration, 'verbose', 0)
-  
+ 
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, verbosity_level)
 
+  print(configuration.database)
   if hasattr(configuration, 'database'):
+    print(protocol)
+    print(subset)
     objects = configuration.database.objects(protocol, subset)
   else:
     logger.error("Please provide a database in your configuration file !")
@@ -153,7 +153,7 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(outdir, '.hdf5')
+    output = obj.make_path(pulsedir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
     if os.path.exists(output) and not overwrite:
@@ -161,7 +161,7 @@ def main(user_input=None):
       continue
     
     # load video
-    video = obj.load_video(dbdir)
+    video = obj.load_video(configuration.dbdir)
     logger.info("Processing input video from `%s'...", video.filename)
 
     # indices where to start and to end the processing

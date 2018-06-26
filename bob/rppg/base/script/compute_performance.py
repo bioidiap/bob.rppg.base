@@ -18,12 +18,12 @@ Options:
   -V, --version             Show version
   -v, --verbose             Increases the verbosity (may appear multiple times)
   -P, --plot                Set this flag if you'd like to see some plots. 
-  -p, --protocol=<string>   Protocol [default: all].
+  -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -i, --hrdir=<path>        The path to the saved heart rate values on your disk. 
-  -o, --resultdir=<path>       The path to the output directory where the results
-                            will be stored [default: performances].
+  -i, --hrdir=<path>        The path to the saved heart rate values on your disk [default: hr]. 
+  -o, --resultdir=<path>    The path to the output directory where the results
+                            will be stored [default: results].
   -O, --overwrite           By default, we don't overwrite existing files. 
                             Set this flag if you want to overwrite existing files.
 
@@ -71,7 +71,7 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', '')
+  protocol = get_parameter(args, configuration, 'protocol', 'None')
   subset = get_parameter(args, configuration, 'subset', 'all')
   hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
   resultdir = get_parameter(args, configuration, 'resultdir', 'results')
