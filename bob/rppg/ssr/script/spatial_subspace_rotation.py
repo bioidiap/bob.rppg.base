@@ -4,9 +4,10 @@
 """Pulse extraction using 2SR algorithm (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot]
-           [--dbdir=<path>] [--outdir=<path>]
+           [--pulsedir=<path>]
            [--threshold=<float>] [--skininit] 
            [--stride=<int>] [--start=<int>] [--end=<int>] 
            [--overwrite] [--gridcount]
@@ -21,12 +22,10 @@ Options:
   -V, --version             Show version
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
-  -p, --protocol=<string>   Protocol [default: all].
+  -p, --protocol=<string>   Protocol.
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -D, --dbdir=<path>        The path to the database on your disk. If not set,
-                            defaults to Idiap standard locations.
-  -o, --outdir=<path>       The path to the output directory where the resulting
+  -o, --pulsedir=<path>       The path to the output directory where the resulting
                             pulse signal will be stored [default: pulse].
   --threshold=<float>       Threshold on the skin probability map [default: 0.5].
   --skininit                If you want to reinitialize the skin model at each frame.
@@ -42,13 +41,9 @@ Options:
 
 Examples:
 
-  To run the spatial subspace rotation on the hci database
+  To run the spatial subspace rotation algorithm
 
-    $ %(prog)s hci -v
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
@@ -64,6 +59,9 @@ from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
 from docopt import docopt
+
+from bob.extension.config import load
+from ...base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -89,45 +87,32 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+ 
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'None')
+  subset = get_parameter(args, configuration, 'subset', '')
+  pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
+  start = get_parameter(args, configuration, 'start', 0)
+  end = get_parameter(args, configuration, 'end', 0)
+  threshold = get_parameter(args, configuration, 'threshold', 0.5)
+  skininit = get_parameter(args, configuration, 'skininit', False)
+  stride = get_parameter(args, configuration, 'stride', 61)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
+  set_verbosity_level(logger, verbosity_level)
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -142,28 +127,28 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
 
   # does the actual work 
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(pulsedir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
 
     # load the video sequence into a reader
-    video = obj.load_video(dbdir)
+    video = obj.load_video(configuration.dbdir)
     logger.info("Processing input video from `%s'...", video.filename)
 
     # indices where to start and to end the processing
     logger.debug("Sequence length = {0}".format(len(video)))
-    start_index = int(args['--start'])
-    end_index = int(args['--end'])
+    start_index = int(start)
+    end_index = int(end)
     if (end_index == 0):
       end_index = len(video) 
     if end_index > len(video):
@@ -178,7 +163,7 @@ def main(user_input=None):
     bounding_boxes = obj.load_face_detection()
 
     # the temporal stride
-    temporal_stride = int(args['--stride'])
+    temporal_stride = int(stride)
 
     # the result -> the pulse signal 
     output_data = numpy.zeros(nb_final_frames, dtype='float64')
@@ -201,18 +186,14 @@ def main(user_input=None):
         try:
           if counter == 0:
             # init skin parameters in any cases if it's the first frame
-            skin_pixels = get_skin_pixels(frame, i, 
-               True, float(args['--threshold']), bounding_boxes)
+            skin_pixels = get_skin_pixels(frame, i, True, threshold, bounding_boxes)
           else:
-            skin_pixels = get_skin_pixels(frame, i, 
-               bool(args['--skininit']), float(args['--threshold']), bounding_boxes)
+            skin_pixels = get_skin_pixels(frame, i, skininit, threshold, bounding_boxes)
         except NameError:
           if counter == 0:
-            skin_pixels = get_skin_pixels(frame, i, 
-               bool(args['--skininit']), float(args['--threshold']))
+            skin_pixels = get_skin_pixels(frame, i, skininit, threshold)
           else:
-            skin_pixels = get_skin_pixels(frame, i, 
-               bool(args['--skininit']), float(args['--threshold']))
+            skin_pixels = get_skin_pixels(frame, i, skininit, threshold)
         logger.debug("There are {0} skin pixels in this frame".format(skin_pixels.shape[1]))
         
         # no skin pixels detected, generally due to no face detection
@@ -223,11 +204,9 @@ def main(user_input=None):
           while skin_pixels.shape[1] <= 0:
             
             try:
-              skin_pixels = get_skin_pixels(video[i-k], (i-k),  
-                 bool(args['--skininit']), float(args['--threshold']), bounding_boxes, skin_frame=frame)
+              skin_pixels = get_skin_pixels(video[i-k], (i-k),  skininit, threshold, bounding_boxes, skin_frame=frame)
             except NameError:
-              skin_pixels = get_skin_pixels(video[i-k], (i-k), 
-                 bool(args['--skininit']), float(args['--threshold']), skin_frame=frame)
+              skin_pixels = get_skin_pixels(video[i-k], (i-k), skininit, threshold, skin_frame=frame)
             
             k += 1
           logger.warn("got skin pixels in frame {0}".format(i-k))
@@ -235,15 +214,14 @@ def main(user_input=None):
         # build c matrix and get eigenvectors and eigenvalues
         eigenvalues[:, counter], eigenvectors[:, :, counter] = get_eigen(skin_pixels)
 
-
         # plot the cluster of skin pixels and eigenvectors (see Figure 1) 
-        if bool(args['--plot'])  and args['--verbose'] >= 2:
+        if plot  and verbosity_level >= 2:
           plot_eigenvectors(skin_pixels, eigenvectors[:, :, counter])
 
         # build P and add it to the pulse signal
         if counter >= temporal_stride:
           tau = counter - temporal_stride
-          p = build_P(counter, int(args['--stride']), eigenvectors, eigenvalues)
+          p = build_P(counter, stride, eigenvectors, eigenvalues)
           output_data[tau:counter] += (p - numpy.mean(p)) 
          
         counter += 1
@@ -252,7 +230,7 @@ def main(user_input=None):
         break
 
     # plot the pulse signal
-    if bool(args['--plot']):
+    if plot:
       import matplotlib.pyplot as plt
       fig = plt.figure()
       ax = fig.add_subplot(111)
