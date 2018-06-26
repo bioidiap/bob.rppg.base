@@ -57,7 +57,7 @@ test:
   imports:
     - {{ name }}
   commands:
-    - cvpr14_extract_signals.py --help
+    - cvpr14_extract_face_and_bg_signals.py --help
     - cvpr14_video2skin.py --help
     - cvpr14_illumination.py --help
     - cvpr14_motion.py --help
