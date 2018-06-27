@@ -145,10 +145,15 @@ def get_parameter(args, configuration, keyword, default):
   # get the argument in the configuration file 
   if hasattr(configuration, keyword):
     arg_config = getattr(configuration, keyword)
+  else:
+    arg_config = None
 
   # get the argument from the command-line
-  arg_command = _type(args[args_kw])
- 
+  if default is not None:
+    arg_command = _type(args[args_kw])
+  else:
+    arg_command = default 
+
   # if the argument was not specified in the config file
   if not hasattr(configuration, keyword):
     return arg_command
