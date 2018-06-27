@@ -9,9 +9,6 @@ bob.ip.draw
 bob.ip.color
 bob.ip.facedetect
 bob.ip.skincolorfilter
-bob.db.cohface
-bob.db.hci_tagging
-gridtk
 numpy
 scipy
 docopt
