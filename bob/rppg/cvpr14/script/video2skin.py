@@ -4,9 +4,9 @@
 """Skin color extraction for database videos (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...] 
+  %(prog)s <configuration> [--protocol=<string>] [--subset=<string> ...] 
            [--verbose ...] [--plot]
-           [--dbdir=<path>] [--outdir=<path>] 
+           [--skindir=<path>] 
            [--overwrite] [--threshold=<float>] [--skininit]
            [--gridcount] 
 
@@ -23,9 +23,7 @@ Options:
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -D, --dbdir=<path>        The path to the database on your disk. If not set,
-                            defaults to Idiap standard locations.
-  -o, --outdir=<path>       Where the skin color will be stored [default: skin].
+  -o, --skindir=<path>       Where the skin color will be stored [default: skin].
                             database (for testing purposes)
   -O, --overwrite           By default, we don't overwrite existing files. The
                             processing will skip those so as to go faster. If you
@@ -38,17 +36,7 @@ Options:
 
 Examples:
 
-  To run the skin color extraction on the hci database
-
-    $ %(prog)s hci -v
-
-  To just run a preliminary benchmark tests on the first 10 videos, do:
-
-    $ %(prog)s cohface -v -l 10
-
-  You can change the output directory using the `-f' r `-b' flags (see help):
-
-    $ %(prog)s hci -v -f /path/to/result/face-directory
+  To run the skin color extraction
 
 
 See '%(prog)s --help' for more information.
@@ -60,7 +48,6 @@ import os
 import sys
 import pkg_resources
 
-from bob.core.log import set_verbosity_level
 from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
@@ -71,6 +58,9 @@ version = pkg_resources.require('bob.rppg.base')[0].version
 import numpy
 import bob.io.base
 import bob.ip.skincolorfilter
+
+from bob.extension.config import load
+from ...base.utils import get_parameter
 
 from ...base.utils import crop_face
 from ..extract_utils import compute_average_colors_mask
@@ -87,44 +77,34 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+ 
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
+  skindir = get_parameter(args, configuration, 'skindir', 'skin')
+  threshold = get_parameter(args, configuration, 'threshold', 0.5)
+  skininit = get_parameter(args, configuration, 'skininit', False)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+  
+  print(protocol)
+  print(type(protocol))
+  
   # if the user wants more verbosity, lowers the logging level
-  set_verbosity_level(logger, args['--verbose'])
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, verbosity_level)
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  print(objects)
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -139,7 +119,7 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
@@ -149,15 +129,15 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output face file
-    output = obj.make_path(args['--outdir'], '.hdf5')
+    output = obj.make_path(skindir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if os.path.exists(output) and not args['--overwrite']:
+    if os.path.exists(output) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
 
     # load the video sequence into a reader
-    video = obj.load_video(dbdir)
+    video = obj.load_video(configuration.dbdir)
 
     logger.info("Processing input video from `%s'...", video.filename)
     logger.debug("Sequence length = {0}".format(video.number_of_frames))
@@ -180,12 +160,12 @@ def main(user_input=None):
       face = crop_face(frame, bounding_boxes[i], facewidth)
 
       # skin filter
-      if i == 0 or bool(args['--skininit']):
+      if i == 0 or bool(skininit):
         skin_filter.estimate_gaussian_parameters(face)
         logger.debug("Skin color parameters:\nmean\n{0}\ncovariance\n{1}".format(skin_filter.mean, skin_filter.covariance))
-      skin_mask = skin_filter.get_skin_mask(face, float(args['--threshold']))
+      skin_mask = skin_filter.get_skin_mask(face, threshold)
 
-      if bool(args['--plot']) and i == 0:
+      if plot and i == 0:
         from matplotlib import pyplot
         skin_mask_image = numpy.copy(face)
         skin_mask_image[:, skin_mask] = 255
@@ -201,7 +181,7 @@ def main(user_input=None):
         else:
           skin_colors[i] = skin_colors[i-1]
 
-    if bool(args['--plot']):
+    if plot:
       from matplotlib import pyplot
 
       f, axarr = pyplot.subplots(3, sharex=True)

@@ -19,12 +19,15 @@ This module contains the implementation of different remote photoplesthymography
   * 2SR [wang-tbe-2015]_. 
 
 Also, we provide scripts to infer the heart-rate from the pulse signals, and
-to evaluate global performance on two different databases: Manhob HCI-Tagging 
-(http://mahnob-db.eu/hci-tagging/) and COHFACE (http://www.idiap.ch/dataset/cohface).
+to evaluate global performance on a database.
+
+Note that this package was first meant to be used with the Manhob HCI-Tagging 
+(http://mahnob-db.eu/hci-tagging/) and COHFACE (http://www.idiap.ch/dataset/cohface)
+databases, but could easily be extended to other datasets.
 
 .. warning:: 
   
-   You should download the databases before trying to run anything below!
+   You should download the aforementioned databases before trying to run anything below!
 
 Documentation
 -------------

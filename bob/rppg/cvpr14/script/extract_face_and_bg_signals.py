@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-"""Extract mean green color on face and background regions
+"""Extract pulses according to Li's CVPR 2014 algorithm 
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--facedir=<path>] [--bgdir=<path>] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...]
+           [--facedir=<path>] [--bgdir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
-           [--wholeface]
-           [--overwrite] [--verbose ...] [--plot] [--gridcount]
+           [--wholeface] [--overwrite] [--verbose ...] [--plot] [--gridcount]
 
   %(prog)s (--help | -h)
   %(prog)s (--version | -V)
@@ -19,9 +19,7 @@ Options:
   -V, --version             Show version
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
-                            all the data sets will be loaded.
-  -d, --dbdir=<path>        The path to the database on your disk. If not set,
-                            defaults to Idiap standard locations.
+                            all the sets will be loaded.
   -f, --facedir=<path>      The path to the directory where signal extracted 
                             from the face area will be stored [default: face]
   -b, --bgdir=<path>        The path to the directory where signal extracted 
@@ -45,9 +43,9 @@ Options:
 
 Example:
 
-  To run the signal extractor for the cohface database
+  To run the pulse extractor: 
 
-    $ %(prog)s cohface -v
+    $ %(prog)s config.py -v
 
 See '%(prog)s --help' for more information.
 
@@ -59,11 +57,13 @@ import os
 import sys
 import pkg_resources
 
-from bob.core.log import set_verbosity_level
 from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
 from docopt import docopt
+
+from bob.extension.config import load
+from ...base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -94,46 +94,34 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+ 
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
+  facedir = get_parameter(args, configuration, 'facedir', 'face')
+  bgdir = get_parameter(args, configuration, 'bgdir', 'bg')
+  npoints = get_parameter(args, configuration, 'npoints', 40)
+  indent = get_parameter(args, configuration, 'indent', 10)
+  quality = get_parameter(args, configuration, 'quality', 0.01)
+  distance = get_parameter(args, configuration, 'distance', 10)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  wholeface = get_parameter(args, configuration, 'wholeface', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+
   # if the user wants more verbosity, lowers the logging level
-  set_verbosity_level(logger, args['--verbose'])
-
-  # TODO: change that to configuration file - Guillaume HEUSCH, 19-06-2018
+  from bob.core.log import set_verbosity_level
+  set_verbosity_level(logger, verbosity_level)
   
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--dbdir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--dbdir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
+  # TODO: find a way to check protocol names - Guillaume HEUSCH, 22-06-2018
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
 
   # if we are on a grid environment, just find what I have to process.
   sge = False
@@ -148,7 +136,7 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
     sys.exit()
 
@@ -157,16 +145,16 @@ def main(user_input=None):
   for obj in objects:
 
     # expected output file
-    output_face = obj.make_path(args['--facedir'], '.hdf5')
-    output_bg = obj.make_path(args['--bgdir'], '.hdf5')
+    output_face = obj.make_path(facedir, '.hdf5')
+    output_bg = obj.make_path(bgdir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if (os.path.exists(output_face) and os.path.exists(output_bg)) and not args['--overwrite']:
+    if (os.path.exists(output_face) and os.path.exists(output_bg)) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output_face)
       continue
     
     # load video
-    video = obj.load_video(dbdir)
+    video = obj.load_video(configuration.dbdir)
     logger.info("Processing input video from `%s'...", video.filename)
 
     # load the result of face detection
@@ -187,9 +175,9 @@ def main(user_input=None):
         # -> infer the mask from the keypoints
         # -> detect the face
         # -> get "good features" inside the face
-        if not bool(args['--wholeface']):
+        if not wholeface:
           kpts = obj.load_drmf_keypoints()
-          mask_points, mask = kp66_to_mask(frame, kpts, int(args['--indent']), bool(args['--plot']))
+          mask_points, mask = kp66_to_mask(frame, kpts, indent, plot)
 
         try: 
           bbox = bounding_boxes[i]
@@ -200,9 +188,8 @@ def main(user_input=None):
         facewidth = bbox.size[1]
         face = crop_face(frame, bbox, facewidth)
         
-        if not bool(args['--wholeface']):
-          good_features = get_good_features_to_track(face,int(args['--npoints']), 
-              float(args['--quality']), int(args['--distance']), bool(args['--plot']))
+        if not wholeface:
+          good_features = get_good_features_to_track(face, npoints, quality, distance, plot)
       else:
         # subsequent frames:
         # -> crop the face with the bounding_boxes of the previous frame (so
@@ -212,8 +199,8 @@ def main(user_input=None):
         #    current corners
         # -> apply this transformation to the mask
         face = crop_face(frame, prev_bb, facewidth)
-        if not bool(args['--wholeface']):
-          good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
+        if not wholeface:
+          good_features = track_features(prev_face, face, prev_features, plot)
           project = find_transformation(prev_features, good_features)
           if project is None: 
             logger.warn("Sequence {0}, frame {1} : No projection was found"
@@ -233,11 +220,9 @@ def main(user_input=None):
         prev_bb = bb
 
       
-      if not bool(args['--wholeface']):
+      if not wholeface:
         prev_face = crop_face(frame, prev_bb, facewidth)
-        prev_features = get_good_features_to_track(face, int(args['--npoints']),
-            float(args['--quality']), int(args['--distance']),
-            bool(args['--plot']))
+        prev_features = get_good_features_to_track(face, npoints, quality, distance, plot)
         if prev_features is None:
           logger.warn("Sequence {0}, frame {1} No features to track"  
               " detected in the current frame, using the previous ones"
@@ -246,14 +231,14 @@ def main(user_input=None):
 
         # get the bottom face region average colors
         face_mask = get_mask(frame, mask_points)
-        face_color[i] = compute_average_colors_mask(frame, face_mask, bool(args['--plot']))
+        face_color[i] = compute_average_colors_mask(frame, face_mask, plot)
       else:
-        face_color[i] = compute_average_colors_wholeface(face, bool(args['--plot']))
+        face_color[i] = compute_average_colors_wholeface(face, plot)
 
       # get the background region average colors
       bg_mask = numpy.zeros((frame.shape[1], frame.shape[2]), dtype=bool)
       bg_mask[:100, :100] = True
-      bg_color[i] = compute_average_colors_mask(frame, bg_mask, bool(args['--plot']))
+      bg_color[i] = compute_average_colors_mask(frame, bg_mask, plot)
 
     # saves the data into an HDF5 file with a '.hdf5' extension
     out_facedir = os.path.dirname(output_face)

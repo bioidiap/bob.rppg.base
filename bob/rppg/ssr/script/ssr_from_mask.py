@@ -4,8 +4,9 @@
 """Pulse extractor using 2SR algorithm (%(version)s)
 
 Usage:
-  %(prog)s (cohface | hci) [--protocol=<string>] [--subset=<string> ...]
-           [--dbdir=<path>] [--pulsedir=<path>] 
+  %(prog)s <configuration>
+           [--protocol=<string>] [--subset=<string> ...] 
+           [--pulsedir=<path>] 
            [--npoints=<int>] [--indent=<int>] [--quality=<float>] [--distance=<int>]
            [--stride=<int>] 
            [--overwrite] [--verbose ...] [--plot] [--gridcount]
@@ -20,10 +21,8 @@ Options:
   -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
-  -d, --dbdir=<path>        The path to the database on your disk. If not set,
-                            defaults to Idiap standard locations.
   -o, --pulsedir=<path>     The path to the directory where signal extracted 
-                            from the face area will be stored [default: face]
+                            from the face area will be stored [default: pulse]
   -n, --npoints=<int>       Number of good features to track [default: 40]
   -i, --indent=<int>        Indent (in percent of the face width) to apply to 
                             keypoints to get the mask [default: 10]
@@ -31,7 +30,7 @@ Options:
                             [default: 0.01]
   -e, --distance=<int>      Minimum distance between detected good features to
                             track [default: 10]
-  --stride=<int>            Temporal stride [default: 20]
+  --stride=<int>            Temporal stride [default: 61]
   -O, --overwrite           By default, we don't overwrite existing files. The
                             processing will skip those so as to go faster. If you
                             still would like me to overwrite them, set this flag.
@@ -43,9 +42,10 @@ Options:
 
 Example:
 
-  To run the pulse extractor for the cohface database
+  To run the spatial subspace rotation algorithm
 
-    $ %(prog)s cohface -v
+    $ %(prog)s config.py -v
+
 
 See '%(prog)s --help' for more information.
 
@@ -60,6 +60,9 @@ from bob.core.log import setup
 logger = setup("bob.rppg.base")
 
 from docopt import docopt
+
+from bob.extension.config import load
+from ...base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -94,46 +97,34 @@ def main(user_input=None):
   completions = dict(prog=prog, version=version,)
   args = docopt(__doc__ % completions, argv=arguments, version='Signal extractor for videos (%s)' % version,)
 
+
+  # load configuration file
+  configuration = load([os.path.join(args['<configuration>'])])
+ 
+  # get various parameters, either from config file or command-line 
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
+  pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
+  npoints = get_parameter(args, configuration, 'npoints', 40)
+  indent = get_parameter(args, configuration, 'indent', 10)
+  quality = get_parameter(args, configuration, 'quality', 0.01)
+  distance = get_parameter(args, configuration, 'distance', 10)
+  stride = get_parameter(args, configuration, 'stride', 61)
+  overwrite = get_parameter(args, configuration, 'overwrite', False)
+  plot = get_parameter(args, configuration, 'plot', False)
+  gridcount = get_parameter(args, configuration, 'gridcount', False)
+  verbosity_level = get_parameter(args, configuration, 'verbose', 0)
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
-  set_verbosity_level(logger, args['--verbose'])
+  set_verbosity_level(logger, verbosity_level)
 
-  # chooses the database driver to use
-  if args['cohface']:
-    import bob.db.cohface
-    if os.path.isdir(bob.db.cohface.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.cohface.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir']
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.cohface.Database(dbdir)
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'clean') or (args['--protocol'] == 'natural')):
-      logger.warning("Protocol should be either 'clean', 'natural' or 'all' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
-  elif args['hci']:
-    import bob.db.hci_tagging
-    import bob.db.hci_tagging.driver
-    if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
-      logger.debug("Using Idiap default location for the DB")
-      dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
-    elif args['--indir'] is not None:
-      logger.debug("Using provided location for the DB")
-      dbdir = args['--indir'] 
-    else:
-      logger.warn("Could not find the database directory, please provide one")
-      sys.exit()
-    db = bob.db.hci_tagging.Database()
-    if not((args['--protocol'] == 'all') or (args['--protocol'] == 'cvpr14')):
-      logger.warning("Protocol should be either 'all' or 'cvpr14' (and not {0})".format(args['--protocol']))
-      sys.exit()
-    objects = db.objects(args['--protocol'], args['--subset'])
-
+  if hasattr(configuration, 'database'):
+    objects = configuration.database.objects(protocol, subset)
+  else:
+    logger.error("Please provide a database in your configuration file !")
+    sys.exit()
+  
   # if we are on a grid environment, just find what I have to process.
   sge = False
   try:
@@ -147,26 +138,26 @@ def main(user_input=None):
       raise RuntimeError("Grid request for job {} on a setup with {} jobs".format(pos, len(objects)))
     objects = [objects[pos]]
 
-  if args['--gridcount']:
+  if gridcount:
     print(len(objects))
 
   # the temporal stride
-  temporal_stride = int(args['--stride'])
+  temporal_stride = stride
 
   # does the actual work - for every video in the available dataset, 
   # extract the signals and dumps the results to the corresponding directory
   for obj in objects:
 
     # expected output file
-    output = obj.make_path(args['--pulsedir'], '.hdf5')
+    output = obj.make_path(pulsedir, '.hdf5')
 
     # if output exists and not overwriting, skip this file
-    if (os.path.exists(output)) and not args['--overwrite']:
+    if (os.path.exists(output)) and not overwrite:
       logger.info("Skipping output file `%s': already exists, use --overwrite to force an overwrite", output)
       continue
     
     # load video
-    video = obj.load_video(dbdir)
+    video = obj.load_video(configuration.dbdir)
     logger.info("Processing input video from `%s'...", video.filename)
     nb_final_frames = len(video)
 
@@ -191,7 +182,7 @@ def main(user_input=None):
         # -> detect the face
         # -> get "good features" inside the face
         kpts = obj.load_drmf_keypoints()
-        mask_points, mask = kp66_to_mask(frame, kpts, int(args['--indent']), bool(args['--plot']))
+        mask_points, mask = kp66_to_mask(frame, kpts, indent, plot)
 
         try: 
           bbox = bounding_boxes[i]
@@ -201,9 +192,7 @@ def main(user_input=None):
         # define the face width for the whole sequence
         facewidth = bbox.size[1]
         face = crop_face(frame, bbox, facewidth)
-        
-        good_features = get_good_features_to_track(face,int(args['--npoints']), 
-            float(args['--quality']), int(args['--distance']), bool(args['--plot']))
+        good_features = get_good_features_to_track(face,npoints, quality, distance, plot)
       else:
         # subsequent frames:
         # -> crop the face with the bounding_boxes of the previous frame (so
@@ -213,7 +202,7 @@ def main(user_input=None):
         #    current corners
         # -> apply this transformation to the mask
         face = crop_face(frame, prev_bb, facewidth)
-        good_features = track_features(prev_face, face, prev_features, bool(args['--plot']))
+        good_features = track_features(prev_face, face, prev_features, plot)
         project = find_transformation(prev_features, good_features)
         if project is None: 
           logger.warn("Sequence {0}, frame {1} : No projection was found"
@@ -234,9 +223,7 @@ def main(user_input=None):
 
       
       prev_face = crop_face(frame, prev_bb, facewidth)
-      prev_features = get_good_features_to_track(face, int(args['--npoints']),
-          float(args['--quality']), int(args['--distance']),
-          bool(args['--plot']))
+      prev_features = get_good_features_to_track(face, npoints, quality, distance, plot)
       if prev_features is None:
         logger.warn("Sequence {0}, frame {1} No features to track"  
             " detected in the current frame, using the previous ones"
@@ -246,7 +233,7 @@ def main(user_input=None):
       # get the bottom face region
       face_mask = get_mask(frame, mask_points)
 
-      if bool(args['--plot']):
+      if plot:
         from matplotlib import pyplot
         mask_image = numpy.copy(frame)
         mask_image[:, face_mask] = 255
@@ -262,17 +249,17 @@ def main(user_input=None):
       eigenvalues[:, i], eigenvectors[:, :, i] = get_eigen(skin_pixels)
 
       # plot the cluster of skin pixels and eigenvectors (see Figure 1) 
-      if bool(args['--plot'])  and args['--verbose'] >= 2:
+      if plot and verbosity_level >= 2:
         plot_eigenvectors(skin_pixels, eigenvectors[:, :, i])
 
       # build P and add it to the pulse signal
       if i >= temporal_stride:
         tau = i - temporal_stride
-        p = build_P(i, int(args['--stride']), eigenvectors, eigenvalues)
+        p = build_P(i, int(stride), eigenvectors, eigenvalues)
         output_data[tau:i] += (p - numpy.mean(p)) 
         
     # plot the pulse signal
-    if bool(args['--plot']):
+    if plot:
       import matplotlib.pyplot as plt
       fig = plt.figure()
       ax = fig.add_subplot(111)

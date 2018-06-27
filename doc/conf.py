@@ -240,7 +240,6 @@ if os.path.exists(sphinx_requirements):
 else:
   intersphinx_mapping = link_documentation()
 
-
 # We want to remove all private (i.e. _. or __.__) members
 # that are not in the list of accepted functions
 accepted_private_functions = ['__array__']

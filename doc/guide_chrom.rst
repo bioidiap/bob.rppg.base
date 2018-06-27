@@ -39,28 +39,66 @@ The mean skin color value is then computed, and projected onto the XY chrominanc
 colorspace. The signals in this colorspace are filtered using a bandpass filter
 before the final pulse signal is built.
 
-
 To extract the pulse signal from video sequences, do the following::
 
-  $ ./bin/chrom_pulse.py cohface -vv
+  $ ./bin/bob_rppg_chrom_pulse.py config.py -vv
 
 To see the full options, including parameters and protocols, type:: 
 
-  $ ./bin/chrom_pulse.py --help 
+  $ ./bin/bob_rppg_chrom_pulse.py --help 
 
-The output of this step normally goes into a directory (you can override on
-the options for this application) named ``pulse``.
+As you can see, the script takes a configuration file as argument. This
+configuration file is required to at least specify the database, but can also
+be used to provide various parameters. A full example of configuration is
+given below.
+
+.. code-block:: python
+
+  import os, sys
+
+  # DATABASE
+  import bob.db.hci_tagging
+  import bob.db.hci_tagging.driver
+  if os.path.isdir(bob.db.hci_tagging.driver.DATABASE_LOCATION):
+    dbdir = bob.db.hci_tagging.driver.DATABASE_LOCATION
+  if dbdir == '':
+    print("You should provide a directory where the DB is located")
+    sys.exit()
+  database = bob.db.hci_tagging.Database()
+  protocol = 'cvpr14'
+  framerate = 61
+
+  basedir = 'chrom-hci-cvpr14/'
+
+  # EXTRACT PULSE 
+  pulsedir = basedir + 'pulse'
+  start = 306
+  end = 2136
+  motion = 0
+  threshold = 0.1
+  skininit = True
+  order = 128
+  window = 0
+
+  # FREQUENCY ANALYSIS
+  hrdir = basedir + 'hr'
+  nsegments = 12
+  nfft = 2048
+
+  # RESULTS
+  resultdir = basedir + 'results'
+
 
 .. note::
 
    The execution of this script is very slow - mainly due to the face detection. 
    You can speed it up using the gridtk_ (especially, if you're at Idiap). For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/chrom_pulse.py cohface
+     $ ./bin/jman sub -t 3490 -- ./bin/bob_rppg_chrom_pulse.py cohface
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/chrom_pulse.py cohface --gridcount
+     $ ./bin/bob_rppg_chrom_pulse.py cohface --gridcount
 
 
 .. _gridtk: https://pypi.python.org/pypi/gridtk
