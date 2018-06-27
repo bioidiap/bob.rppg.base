@@ -36,11 +36,11 @@ After having applied the skin color filter, the full algorithm is applied,
 as described in Algorithm 1 in the paper. To get the pulse signals for
 all video in a database, do the following::
 
-  $ ./bin/ssr_pulse.py config.py -v
+  $ ./bin/bob_rppg_ssr_pulse.py config.py -v
 
 To see the full options, including parameters and protocols, type:: 
 
-  $ ./bin/ssr_pulse.py --help 
+  $ ./bin/bob_rppg_ssr_pulse.py --help 
 
 As you can see, the script takes a configuration file as argument. This
 configuration file is required to at least specify the database, but can also
@@ -86,11 +86,11 @@ given below.
    The execution of this script is very slow - mainly due to the face detection. 
    You can speed it up using the gridtk_ (especially, if you're at Idiap). For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/ssr_pulse.py cohface
+     $ ./bin/jman sub -t 3490 -- ./bin/bob_rppg_ssr_pulse.py cohface
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/ssr_pulse.py cohface --gridcount
+     $ ./bin/bob_rppg_ssr_pulse.py cohface --gridcount
 
 
 .. _gridtk: https://pypi.python.org/pypi/gridtk

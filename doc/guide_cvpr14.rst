@@ -64,11 +64,11 @@ To extract the mean green colors the face region and of
 the background across the video sequences of the defined database 
 in the configuration file, do the following::
 
-  $ ./bin/cvpr14_extract_face_and_bg_signals.py config.py -vv
+  $ ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals.py config.py -vv
 
 To see the full options, including parameters and protocols, type:: 
 
-  $ ./bin/cvpr14_extract_face_and_bg_signals.py --help 
+  $ ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals.py --help 
 
 Note that you can either pass parameters through command-line, or 
 by specififing them in the configuration file. Be aware that
@@ -80,11 +80,11 @@ the command-line overrides the configuration file though.
    You can speed it up using the gridtk_ toolbox (especially, if you're at Idiap). 
    For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/cvpr14_extract_face_and_bg_signals. config.py
+     $ ./bin/jman sub -t 3490 -- ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals. config.py
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/cvpr14_extract_signals.py cohface --gridcount
+     $ ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals.py cohface --gridcount
 
 
 Step 2: Illumination Rectification
@@ -96,7 +96,7 @@ Normalized Linear Mean Square and is then removed from the face signal. To get
 the rectified green signal of the face area, you should execute the following
 script::
 
-  $ ./bin/cvpr14_illumination.py config.py -v
+  $ ./bin/bob_rppg_cvpr14_illumination.py config.py -v
 
 Again, parameters can be passed either through the configuration file or
 the command-line
@@ -113,8 +113,8 @@ channel on all the segment of all sequences. By default, the threshold is set su
 of all the segments will be retained. To get the signals where large motion has
 been eliminated, execute the following commands::
 
-  $ ./bin/cvpr14_motion.py cohface --save-threshold threshold.txt -vv
-  $ ./bin/cvpr14_motion.py cohface --load-threshold threshold.txt -vv
+  $ ./bin/bob_rppg_cvpr14_motion.py cohface --save-threshold threshold.txt -vv
+  $ ./bin/bob_rppg_cvpr14_motion.py cohface --load-threshold threshold.txt -vv
 
 
 Step 4: Filtering
@@ -129,7 +129,7 @@ window. Finally, a bandpass filter is applied to restrict the
 frequencies to the range corresponding to a plausible heart-rate. To filter the
 signal, you should execute the following command::
 
-  $ ./bin/cvpr14_filter.py cohface -vv
+  $ ./bin/bob_rppg_cvpr14_filter.py cohface -vv
 
 A Full Configuration File Example
 ---------------------------------
