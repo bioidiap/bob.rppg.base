@@ -20,7 +20,7 @@ Options:
   -V, --version             Show version
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
-  -p, --protocol=<string>   Protocol.
+  -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -i, --motiondir=<path>        The path to the saved signals to be filtered on
@@ -92,8 +92,8 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
   
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'None')
-  subset = get_parameter(args, configuration, 'subset', '')
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
   motiondir = get_parameter(args, configuration, 'motiondir', 'motion')
   pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
   Lambda = get_parameter(args, configuration, 'Lambda', 300)

@@ -20,7 +20,7 @@ Options:
   -V, --version             Show version
   -P, --plot                Set this flag if you'd like to follow-up the algorithm
                             execution graphically. We'll plot some interactions.
-  -p, --protocol=<string>   Protocol.
+  -p, --protocol=<string>   Protocol [default: all].[default: all]
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -i, --pulsedir=<path>     The path to the saved filtered signals on your disk
@@ -60,7 +60,7 @@ logger = setup("bob.rppg.base")
 from docopt import docopt
 
 from bob.extension.config import load
-from bob.rppg.base.utils import get_parameter
+from ..utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -83,8 +83,8 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'None')
-  subset = get_parameter(args, configuration, 'subset', 'all')
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
   pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
   hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
   framerate = get_parameter(args, configuration, 'framerate', 61)

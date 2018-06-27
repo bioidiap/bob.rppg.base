@@ -18,7 +18,7 @@ Options:
   -V, --version             Show version
   -v, --verbose             Increases the verbosity (may appear multiple times)
   -P, --plot                Set this flag if you'd like to see some plots. 
-  -p, --protocol=<string>   Protocol.
+  -p, --protocol=<string>   Protocol [default: all].[default: all]
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -i, --hrdir=<path>        The path to the saved heart rate values on your disk [default: hr]. 
@@ -48,7 +48,7 @@ logger = setup("bob.rppg.base")
 from docopt import docopt
 
 from bob.extension.config import load
-from bob.rppg.base.utils import get_parameter
+from ..utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -71,8 +71,8 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'None')
-  subset = get_parameter(args, configuration, 'subset', 'all')
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
   hrdir = get_parameter(args, configuration, 'hrdir', 'hr')
   resultdir = get_parameter(args, configuration, 'resultdir', 'results')
   overwrite = get_parameter(args, configuration, 'overwrite', False)

@@ -17,7 +17,7 @@ Usage:
 Options:
   -h, --help                Show this screen
   -V, --version             Show version
-  -p, --protocol=<string>   Protocol.
+  -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the sets will be loaded.
   -f, --facedir=<path>      The path to the directory where signal extracted 
@@ -63,6 +63,7 @@ logger = setup("bob.rppg.base")
 from docopt import docopt
 
 from bob.extension.config import load
+from ...base.utils import get_parameter
 
 version = pkg_resources.require('bob.rppg.base')[0].version
 
@@ -70,7 +71,6 @@ import numpy
 import bob.io.base
 import bob.ip.facedetect
 
-from ...base.utils import get_parameter
 from ...base.utils import crop_face
 
 from ..extract_utils import kp66_to_mask
@@ -96,10 +96,10 @@ def main(user_input=None):
 
   # load configuration file
   configuration = load([os.path.join(args['<configuration>'])])
-  
+ 
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'None')
-  subset = get_parameter(args, configuration, 'subset', '')
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
   facedir = get_parameter(args, configuration, 'facedir', 'face')
   bgdir = get_parameter(args, configuration, 'bgdir', 'bg')
   npoints = get_parameter(args, configuration, 'npoints', 40)
@@ -111,7 +111,7 @@ def main(user_input=None):
   gridcount = get_parameter(args, configuration, 'gridcount', False)
   wholeface = get_parameter(args, configuration, 'wholeface', False)
   verbosity_level = get_parameter(args, configuration, 'verbose', 0)
-  
+
   # if the user wants more verbosity, lowers the logging level
   from bob.core.log import set_verbosity_level
   set_verbosity_level(logger, verbosity_level)
