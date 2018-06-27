@@ -7,17 +7,17 @@ package:
 
 build:
   entry_points:
-    - cvpr14_extract_face_and_bg_signals.py = bob.rppg.cvpr14.script.extract_face_and_bg_signals:main
-    - cvpr14_video2skin.py = bob.rppg.cvpr14.script.video2skin:main
-    - cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main
-    - cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main
-    - cvpr14_filter.py = bob.rppg.cvpr14.script.filter:main
-    - chrom_pulse.py = bob.rppg.chrom.script.extract_pulse:main
-    - chrom_pulse_from_mask.py = bob.rppg.chrom.script.extract_pulse_from_mask:main
-    - ssr_pulse.py = bob.rppg.ssr.script.spatial_subspace_rotation:main
-    - ssr_pulse_from_mask.py = bob.rppg.ssr.script.ssr_from_mask:main
-    - rppg_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main
-    - rppg_compute_performance.py = bob.rppg.base.script.compute_performance:main
+    - bob_rppg_cvpr14_extract_face_and_bg_signals.py = bob.rppg.cvpr14.script.extract_face_and_bg_signals:main
+    - bob_rppg_cvpr14_video2skin.py = bob.rppg.cvpr14.script.video2skin:main
+    - bob_rppg_cvpr14_illumination.py = bob.rppg.cvpr14.script.illumination_rectification:main
+    - bob_rppg_cvpr14_motion.py = bob.rppg.cvpr14.script.motion_elimination:main
+    - bob_rppg_cvpr14_filter.py = bob.rppg.cvpr14.script.filter:main
+    - bob_rppg_chrom_pulse.py = bob.rppg.chrom.script.extract_pulse:main
+    - bob_rppg_chrom_pulse_from_mask.py = bob.rppg.chrom.script.extract_pulse_from_mask:main
+    - bob_rppg_ssr_pulse.py = bob.rppg.ssr.script.spatial_subspace_rotation:main
+    - bob_rppg_ssr_pulse_from_mask.py = bob.rppg.ssr.script.ssr_from_mask:main
+    - bob_rppg_base_get_heart_rate.py = bob.rppg.base.script.frequency_analysis:main
+    - bob_rppg_base_compute_performance.py = bob.rppg.base.script.compute_performance:main
   number: {{ environ.get('BOB_BUILD_NUMBER', 0) }}
   run_exports:
     - {{ pin_subpackage(name) }}
@@ -57,17 +57,17 @@ test:
   imports:
     - {{ name }}
   commands:
-    - cvpr14_extract_face_and_bg_signals.py --help
-    - cvpr14_video2skin.py --help
-    - cvpr14_illumination.py --help
-    - cvpr14_motion.py --help
-    - cvpr14_filter.py --help
-    - chrom_pulse.py --help
-    - chrom_pulse_from_mask.py --help
-    - ssr_pulse.py --help
-    - ssr_pulse_from_mask.py --help
-    - rppg_get_heart_rate.py --help
-    - rppg_compute_performance.py --help
+    - bob_rppg_cvpr14_extract_face_and_bg_signals.py --help
+    - bob_rppg_cvpr14_video2skin.py --help
+    - bob_rppg_cvpr14_illumination.py --help
+    - bob_rppg_cvpr14_motion.py --help
+    - bob_rppg_cvpr14_filter.py --help
+    - bob_rppg_chrom_pulse.py --help
+    - bob_rppg_chrom_pulse_from_mask.py --help
+    - bob_rppg_ssr_pulse.py --help
+    - bob_rppg_ssr_pulse_from_mask.py --help
+    - bob_rppg_base_get_heart_rate.py --help
+    - bob_rppg_base_compute_performance.py --help
     - nosetests --with-coverage --cover-package={{ name }} -sv {{ name }}
     - sphinx-build -aEW {{ project_dir }}/doc {{ project_dir }}/sphinx
     - sphinx-build -aEb doctest {{ project_dir }}/doc sphinx
