@@ -18,7 +18,7 @@ Usage:
 Options:
   -h, --help                Show this screen
   -V, --version             Show version
-  -p, --protocol=<string>   Protocol.
+  -p, --protocol=<string>   Protocol [default: all].
   -s, --subset=<string>     Data subset to load. If nothing is provided 
                             all the data sets will be loaded.
   -o, --pulsedir=<path>     The path to the directory where signal extracted 
@@ -102,8 +102,8 @@ def main(user_input=None):
   configuration = load([os.path.join(args['<configuration>'])])
  
   # get various parameters, either from config file or command-line 
-  protocol = get_parameter(args, configuration, 'protocol', 'None')
-  subset = get_parameter(args, configuration, 'subset', '')
+  protocol = get_parameter(args, configuration, 'protocol', 'all')
+  subset = get_parameter(args, configuration, 'subset', None)
   pulsedir = get_parameter(args, configuration, 'pulsedir', 'pulse')
   npoints = get_parameter(args, configuration, 'npoints', 40)
   indent = get_parameter(args, configuration, 'indent', 10)
