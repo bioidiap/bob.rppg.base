@@ -84,7 +84,7 @@ the command-line overrides the configuration file though.
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals.py cohface --gridcount
+     $ ./bin/bob_rppg_cvpr14_extract_face_and_bg_signals.py config.py --gridcount
 
 
 Step 2: Illumination Rectification
@@ -113,8 +113,8 @@ channel on all the segment of all sequences. By default, the threshold is set su
 of all the segments will be retained. To get the signals where large motion has
 been eliminated, execute the following commands::
 
-  $ ./bin/bob_rppg_cvpr14_motion.py cohface --save-threshold threshold.txt -vv
-  $ ./bin/bob_rppg_cvpr14_motion.py cohface --load-threshold threshold.txt -vv
+  $ ./bin/bob_rppg_cvpr14_motion.py config.py --save-threshold threshold.txt -vv
+  $ ./bin/bob_rppg_cvpr14_motion.py config.py --load-threshold threshold.txt -vv
 
 
 Step 4: Filtering
@@ -129,7 +129,7 @@ window. Finally, a bandpass filter is applied to restrict the
 frequencies to the range corresponding to a plausible heart-rate. To filter the
 signal, you should execute the following command::
 
-  $ ./bin/bob_rppg_cvpr14_filter.py cohface -vv
+  $ ./bin/bob_rppg_cvpr14_filter.py config.py -vv
 
 A Full Configuration File Example
 ---------------------------------

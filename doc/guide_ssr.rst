@@ -86,11 +86,11 @@ given below.
    The execution of this script is very slow - mainly due to the face detection. 
    You can speed it up using the gridtk_ (especially, if you're at Idiap). For example::
 
-     $ ./bin/jman sub -t 3490 -- ./bin/bob_rppg_ssr_pulse.py cohface
+     $ ./bin/jman sub -t 3490 -- ./bin/bob_rppg_ssr_pulse.py config.py
 
    The number of jobs (i.e. 3490) is given by typing::
      
-     $ ./bin/bob_rppg_ssr_pulse.py cohface --gridcount
+     $ ./bin/bob_rppg_ssr_pulse.py config.py --gridcount
 
 
 .. _gridtk: https://pypi.python.org/pypi/gridtk
