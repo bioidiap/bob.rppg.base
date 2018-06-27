@@ -37,13 +37,9 @@ Options:
 
 Examples:
 
-  To run the frequency analysis for the cohface database
+  To run the frequency analysis 
 
-    $ %(prog)s cohface -v
-
-  You can change the output directory using the `-o' flag:
-
-    $ %(prog)s hci -v -o /path/to/result/directory
+    $ %(prog)s config.py -v
 
 
 See '%(prog)s --help' for more information.
