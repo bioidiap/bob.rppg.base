@@ -57,13 +57,17 @@ def crop_face(image, bbx, facewidth):
   return face
 
 
-def build_bandpass_filter(fs, order, plot=False):
+def build_bandpass_filter(fs, order, min_freq=0.7, max_freq=4.0, plot=False):
   """builds a butterworth bandpass filter.
   
   Parameters
   ----------
   fs: float
     sampling frequency of the signal (i.e. framerate).
+  order: int
+    The order of the filter (the higher, the sharper).
+  min_freq: int
+    The order of the filter (the higher, the sharper).
   order: int
     The order of the filter (the higher, the sharper).
   plot: bool
