@@ -94,10 +94,10 @@ def test_gftt():
   
   from bob.rppg.cvpr14.extract_utils import get_good_features_to_track 
   corners = get_good_features_to_track(image, 4)
-  assert numpy.array_equal(corners[0][0], numpy.array([20.0,20.0])), "1st corner"
-  assert numpy.array_equal(corners[1][0], numpy.array([79.0,20.0])), "2nd corner"
-  assert numpy.array_equal(corners[2][0], numpy.array([20.0,79.0])), "3rd corner"
-  assert numpy.array_equal(corners[3][0], numpy.array([79.0,79.0])), "4th corner"
+  assert numpy.array_equal(corners[0][0], numpy.array([79.0,79.0])), "1st corner"
+  assert numpy.array_equal(corners[1][0], numpy.array([20.0,79.0])), "2nd corner"
+  assert numpy.array_equal(corners[2][0], numpy.array([79.0,20.0])), "3rd corner"
+  assert numpy.array_equal(corners[3][0], numpy.array([20.0,20.0])), "4th corner"
 
 
 @opencv_available
@@ -118,10 +118,10 @@ def test_track_features():
   from bob.rppg.cvpr14.extract_utils import track_features
   points2 = track_features(image1, image2, points1)
   points2 = numpy.rint(points2)
-  assert numpy.array_equal(points2[0][0], numpy.array([21,21])), "1st corner"
-  assert numpy.array_equal(points2[1][0], numpy.array([80,21])), "2nd corner"
-  assert numpy.array_equal(points2[2][0], numpy.array([21,80])), "3rd corner"
-  assert numpy.array_equal(points2[3][0], numpy.array([80,80])), "4th corner"
+  assert numpy.array_equal(points2[0][0], numpy.array([80,80])), "1st corner"
+  assert numpy.array_equal(points2[1][0], numpy.array([21,80])), "2nd corner"
+  assert numpy.array_equal(points2[2][0], numpy.array([80,21])), "3rd corner"
+  assert numpy.array_equal(points2[3][0], numpy.array([21,21])), "4th corner"
   
 
 @opencv_available

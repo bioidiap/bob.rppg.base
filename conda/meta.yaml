@@ -66,7 +66,7 @@ test:
     - bob_rppg_ssr_pulse_from_mask.py --help
     - bob_rppg_base_get_heart_rate.py --help
     - bob_rppg_base_compute_performance.py --help
-    - nosetests --with-coverage --cover-package={{ name }} -sv {{ name }}
+    - nosetests --with-coverage --cover-package={{ name }} -sv bob.rppg
     - sphinx-build -aEW {{ project_dir }}/doc {{ project_dir }}/sphinx
     - sphinx-build -aEb doctest {{ project_dir }}/doc sphinx
     - conda inspect linkages -p $PREFIX {{ name }}  # [not win]
