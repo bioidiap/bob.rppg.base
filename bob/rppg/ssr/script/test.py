@@ -22,7 +22,7 @@ def test_get_skin_pixels():
   mod = sys.modules.get(__name__) or loader.load_module(__name__)
  
   # load face image
-  face = load(datafile('001.jpg', 'bob.rppg.ssr.script'))
+  face = load(datafile('001.jpg', 'bob.rppg.base'))
 
   from bob.rppg.ssr.ssr_utils import get_skin_pixels
   
