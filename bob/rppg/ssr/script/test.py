@@ -1,23 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Copyright (c) 2017 Idiap Research Institute, http://www.idiap.ch/
-# Written by Guillaume Heusch <guillaume.heusch@idiap.ch>,
-# 
-# This file is part of bob.rpgg.base.
-# 
-# bob.rppg.base is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 3 as
-# published by the Free Software Foundation.
-# 
-# bob.rppg.base is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with bob.rppg.base. If not, see <http://www.gnu.org/licenses/>.
-
 import nose.tools
 import pkgutil
 import os, sys
@@ -68,8 +51,8 @@ def test_get_eigen():
   a = numpy.array([[1, 0], [0, 1]])
 
   from bob.rppg.ssr.ssr_utils import get_eigen
-  evals, evecs = get_eigen(a) 
-  assert numpy.all(evals == numpy.array([0, 0]))
+  evals, evecs = get_eigen(a)
+  assert numpy.all(evals == numpy.array([0.5, 0.5]))
   assert numpy.all(evecs == numpy.array([[0, 1], [1, 0]]))
   
   a = numpy.array([[0, 0], [0, 0]])

@@ -86,7 +86,7 @@ def get_eigen(skin_pixels):
   """
   # build the correlation matrix
   c = numpy.dot(skin_pixels, skin_pixels.T)
-  c /= skin_pixels.shape[1]
+  c = c / skin_pixels.shape[1]
 
   # get eigenvectors and sort them according to eigenvalues (largest first)
   evals, evecs = numpy.linalg.eig(c)

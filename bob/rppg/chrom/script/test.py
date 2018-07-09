@@ -89,4 +89,4 @@ def test_project_chrominance():
   r = g = b = 1
   x,y = project_chrominance(r, g, b)
   assert x == 1.0
-  assert y == 4.0
+  assert y == 1.0
