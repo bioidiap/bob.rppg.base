@@ -7,6 +7,9 @@ import os, sys
 import numpy
 import functools
 
+from bob.io.base.test_utils import datafile
+from bob.io.base import load
+
 
 def test_get_skin_pixels():
   """
@@ -19,13 +22,7 @@ def test_get_skin_pixels():
   mod = sys.modules.get(__name__) or loader.load_module(__name__)
  
   # load face image
-  face_file = 'data/001.jpg'
-  parts = face_file.split('/')
-  parts.insert(0, os.path.dirname(mod.__file__))
-  face_name = os.path.join(*parts)
-  import bob.io.base
-  import bob.io.image
-  face = bob.io.base.load(face_name)
+  face = load(datafile('001.jpg', 'bob.rppg.ssr.script'))
 
   from bob.rppg.ssr.ssr_utils import get_skin_pixels
   
@@ -48,13 +45,7 @@ def test_get_eigen():
   """
   Test the computation of eigenvalues and eigenvector
   """
-  a = numpy.array([[1, 0], [0, 1]])
-
   from bob.rppg.ssr.ssr_utils import get_eigen
-  evals, evecs = get_eigen(a)
-  assert numpy.all(evals == numpy.array([0.5, 0.5]))
-  assert numpy.all(evecs == numpy.array([[0, 1], [1, 0]]))
-  
   a = numpy.array([[0, 0], [0, 0]])
   evals, evecs = get_eigen(a) 
   assert numpy.all(evals == numpy.array([0, 0]))
