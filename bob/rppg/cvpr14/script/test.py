@@ -160,7 +160,7 @@ def test_compute_average_color():
   image[1, :, :] = 128
   
   from bob.rppg.cvpr14.extract_utils import compute_average_colors_mask
-  mean_green = compute_average_colors_mask(image, mask)
+  mean_green = compute_average_colors_mask(image, mask)[1]
   assert mean_green == 128
 
 def test_rectify_illumination():
