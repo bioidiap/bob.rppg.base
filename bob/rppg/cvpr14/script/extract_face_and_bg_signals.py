@@ -231,14 +231,15 @@ def main(user_input=None):
 
         # get the bottom face region average colors
         face_mask = get_mask(frame, mask_points)
-        face_color[i] = compute_average_colors_mask(frame, face_mask, plot)
+        # original algorithm: green only
+        face_color[i] = compute_average_colors_mask(frame, face_mask, plot)[1]
       else:
         face_color[i] = compute_average_colors_wholeface(face, plot)
 
       # get the background region average colors
       bg_mask = numpy.zeros((frame.shape[1], frame.shape[2]), dtype=bool)
       bg_mask[:100, :100] = True
-      bg_color[i] = compute_average_colors_mask(frame, bg_mask, plot)
+      bg_color[i] = compute_average_colors_mask(frame, bg_mask, plot)[1]
 
     # saves the data into an HDF5 file with a '.hdf5' extension
     out_facedir = os.path.dirname(output_face)

@@ -173,7 +173,8 @@ def main(user_input=None):
         pyplot.show()
 
       if numpy.count_nonzero(skin_mask) != 0:
-        skin_colors[i] = compute_average_colors_mask(face, skin_mask)
+        # green only
+        skin_colors[i] = compute_average_colors_mask(face, skin_mask)[1]
       else:
         logger.warn("No skin pixels detected in frame {0}, using previous value".format(i))
         if i == 0:

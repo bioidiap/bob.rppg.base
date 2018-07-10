@@ -281,8 +281,8 @@ def compute_average_colors_mask(image, mask, plot=False):
     
   Returns
   -------
-  color: :obj:`float`
-    The average green color inside the mask ROI.
+  color: numpy.ndarray 
+    The average RGB colors inside the mask ROI.
   
   """
   if plot:
@@ -293,8 +293,8 @@ def compute_average_colors_mask(image, mask, plot=False):
     pyplot.title('Mask overlaid on the original frame')
     pyplot.show()
 
-  green = image[1, mask]
-  return numpy.mean(green)
+  [red, green, blue] = image[:, mask]
+  return numpy.array([numpy.mean(red), numpy.mean(green), numpy.mean(blue)])
 
 def compute_average_colors_wholeface(image, plot=False):
   """computes the average green color within the provided face image 
