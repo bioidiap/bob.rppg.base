@@ -4,8 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. _bob.ip.facedetect:
-.. _bob.ip.skincolorfilter:
+.. _bob.rppg.base:
 
 
 ==================================================
